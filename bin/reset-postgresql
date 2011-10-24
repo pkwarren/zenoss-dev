@@ -1,6 +1,10 @@
 #!/bin/bash
 
-dropdb zenoss_zep
-dropdb zenoss_zep_dev
-dropdb zenoss_zep_test
-dropdb zodb
+set -e
+psql -q -1 -v ON_ERROR_STOP=1 --pset pager=off -d postgres <<EOF
+SET client_min_messages to WARNING;
+DROP DATABASE IF EXISTS zenoss_zep;
+DROP DATABASE IF EXISTS zenoss_zep_dev;
+DROP DATABASE IF EXISTS zenoss_zep_test;
+DROP DATABASE IF EXISTS zodb;
+EOF

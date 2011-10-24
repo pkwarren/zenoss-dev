@@ -1,12 +1,4 @@
 #!/bin/bash
 
-if [ `id -u` != 0 ]; then
-    SUDO="sudo"
-fi
-if [ `uname -s` = 'Darwin' ]; then
-    echo flush_all | nc 127.0.0.1 11211
-elif [ -x /sbin/service ]; then
-    $SUDO /sbin/service memcached restart
-elif [ -x /usr/sbin/service ]; then
-    $SUDO /usr/sbin/service memcached restart
-fi
+echo flush_all | nc 127.0.0.1 11211 > /dev/null 2>&1
+exit $?

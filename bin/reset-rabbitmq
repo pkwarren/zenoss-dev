@@ -7,9 +7,9 @@ USER="zenoss"
 PASS="zenoss"
 RABBITMQCTL="rabbitmqctl"
 if [ `uname -s` = "Linux" ]; then
-	RABBITMQCTL="/usr/sbin/$RABBITMQCTL"
+    RABBITMQCTL="/usr/sbin/$RABBITMQCTL"
     if [ `id -u` -ne 0 ]; then
-        RABBITMQCTL="sudo $RABBITMQCTL"
+        RABBITMQCTL="sudo -n $RABBITMQCTL"
     fi
 fi
 
