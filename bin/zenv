@@ -1,0 +1,6 @@
+#!/bin/bash
+
+if [ -n "$1" ]; then
+    export ZENREL="$1"
+fi
+exec bash --rcfile $HOME/.zenossrc

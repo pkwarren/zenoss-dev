@@ -1,0 +1,6 @@
+#!/bin/bash
+
+dropdb zenoss_zep
+dropdb zenoss_zep_dev
+dropdb zenoss_zep_test
+dropdb zodb

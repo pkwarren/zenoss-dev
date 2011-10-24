@@ -1,0 +1,9 @@
+#!/bin/bash
+
+[ -z "$ZENHOME" ] && echo "ZENHOME not set" && exit 1
+[ -x "$ZENHOME/bin/zenoss" ] && "$ZENHOME/bin/zenoss" stop
+rm -rf "$ZENHOME"/*
+reset-memcached
+reset-mysql
+reset-postgresql
+reset-rabbitmq

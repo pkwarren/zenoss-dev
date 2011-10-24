@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+mysql --verbose --batch -u root <<EOF
+drop database if exists events;
+drop database if exists zenoss_zep;
+drop database if exists zenoss_zep_dev;
+drop database if exists zenoss_zep_test;
+drop database if exists zodb;
+EOF
