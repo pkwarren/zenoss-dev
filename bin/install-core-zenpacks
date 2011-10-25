@@ -1,0 +1,9 @@
+#!/bin/bash
+
+zenpacks="ApacheMonitor DellMonitor DigMonitor DnsMonitor FtpMonitor HPMonitor HttpMonitor IRCDMonitor JabberMonitor LDAPMonitor MySqlMonitor NNTPMonitor NtpMonitor RPCMonitor ZenJMX LinuxMonitor ZenAWS ZenossVirtualHostMonitor EsxTop XenMonitor"
+pushd $ZENSRC/zenpacks > /dev/null
+for pack in $zenpacks; do
+    full_pack="ZenPacks.zenoss.$pack"
+    [ -d "$full_pack" ] && zenpack --link --install $full_pack || exit 1
+done
+popd > /dev/null

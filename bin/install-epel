@@ -1,0 +1,8 @@
+#!/bin/bash
+
+tmpdir=`mktemp -d` || exit 1
+pushd $tmpdir > /dev/null
+wget http://download.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm
+rpm -Uvh epel-release-5-4.noarch.rpm
+popd $tmpdir > /dev/null
+rm -rf $tmpdir
