@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Rebuilds Zenoss (cleaning out any artifacts of previous build).
+
+zenoss-clean
+pushd $ZENSRC > /dev/null
+svn-ignored | xargs rm -rf
+svn up
+pushd inst > /dev/null
+link-products
+time ./install.sh --no-prompt
+zenoss stop
+perl -pi -e 's/#    debug-mode on/debug-mode on/' $ZENHOME/etc/zope.conf
+build_protocols
+popd > /dev/null
+popd > /dev/null
