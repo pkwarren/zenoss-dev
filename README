@@ -1,1 +1,16 @@
 Basic utilities used for Zenoss development.
+
+Usage:
+1) Add this to your .bashrc/.profile:
+
+alias zenv=<path_to_this_directory>/bin/zenv
+
+or:
+
+2) Add the bin directory from this checkout to your PATH.
+
+If you use (1), then run 'zenv' with no arguments to work on trunk. See the
+zenv command for more information on its usage.
+
+If you use (2), then you can use any of the companion scripts in bin/
+standalone or use 'zenv' to manage your Zenoss development environments.

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Wipes all of the known MySQL databases on the system.
+
 set -e
 mysql --batch -u root <<EOF
 drop database if exists events;

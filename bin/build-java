@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Builds the shared Java components and installs them into the local Maven
+# repository.
+
+set -e
+pushd $ZENSRC/java > /dev/null
+mvn -q clean install
+popd > /dev/null

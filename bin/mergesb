@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+# Merges a sandbox for a user into the current SVN checkout.
+
+import optparse
+import subprocess
+import sys
+
+CORE_BASE_URL = 'http://dev.zenoss.com/svnint'
+DEFAULT_USER = 'pwarren'
+ENTERPRISE_BASE_URL = 'http://dev.zenoss.com/svnint'
+
+parser = optparse.OptionParser(usage='usage: %prog [options] branch_name')
+parser.add_option('-e', '--enterprise', action="store_true", dest="enterprise", default=False,
+                  help='Merge from branch in enterprise')
+parser.add_option('-u', '--user', dest='user', default=DEFAULT_USER,
+                  help="Merge from sandbox for user (default '%s')." % DEFAULT_USER)
+(options, args) = parser.parse_args()
+if len(args) != 1:
+    parser.error('Missing branch name')
+branch_name = args[0]
+
+if options.enterprise:
+    base_url = ENTERPRISE_BASE_URL
+    sb_url = '%s/sandboxen/%s/%s/zenpacks' % (base_url, options.user, branch_name)
+else:
+    base_url = CORE_BASE_URL
+    sb_url = '%s/sandboxen/core/%s/%s' % (base_url, options.user, branch_name)
+
+cmd = ['svn' , 'merge']
+if not options.enterprise:
+    cmd.append('--reintegrate')
+cmd.append(sb_url)
+print "Running: %s" % (' '.join(cmd))
+rc = subprocess.call(cmd)
+if rc != 0:
+    sys.exit(rc)

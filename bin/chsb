@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+
+# Changes the current SVN checkout to the specified sandbox name.
+# NOTE: This should be run from a toplevel core or enterprise/zenpacks directory
+#       only - otherwise it can lead to a mixed checkout!
+
+import optparse
+import subprocess
+import sys
+
+CORE_BASE_URL = 'http://dev.zenoss.com/svnint'
+ENTERPRISE_BASE_URL = 'http://dev.zenoss.com/svnint'
+DEFAULT_USER = 'pwarren' # TODO: Load from config file
+
+parser = optparse.OptionParser(usage='usage: %prog [options] branch_name')
+parser.add_option('-b', '--branch', action="store_true", dest="branch",
+                  help='Switch to official branch')
+parser.add_option('-e', '--enterprise', action="store_true", dest="enterprise", default=False,
+                  help='Switch to branch in enterprise')
+parser.add_option('-u', '--user', dest='user', default=DEFAULT_USER,
+                  help="Switch to sandbox for user (default '%s')." % DEFAULT_USER)
+(options, args) = parser.parse_args()
+if len(args) != 1:
+    parser.error('Missing branch name')
+branch_name = args[0]
+
+if options.enterprise:
+    base_url = ENTERPRISE_BASE_URL
+    if options.branch:
+        sb_url = '%s/branches/%s/zenpacks' % (base_url, branch_name)
+    elif branch_name == 'trunk':
+        sb_url = '%s/%s/enterprise/zenpacks' % (base_url, branch_name)
+    else:
+        sb_url = '%s/sandboxen/%s/%s/zenpacks' % (base_url, options.user, branch_name)
+else:
+    base_url = CORE_BASE_URL
+    if options.branch:
+        sb_url = '%s/branches/core/%s' % (base_url, branch_name)
+    elif branch_name == 'trunk':
+        sb_url = '%s/%s/core' % (base_url, branch_name)
+    else:
+        sb_url = '%s/sandboxen/core/%s/%s' % (base_url, options.user, branch_name)
+
+cmd = ['svn' , 'switch', sb_url]
+print "Running: %s" % (' '.join(cmd))
+rc = subprocess.call(cmd)
+if rc != 0:
+    sys.exit(rc)

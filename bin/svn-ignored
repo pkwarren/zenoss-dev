@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Prints out a list of ignored or untracked files in the SVN repository. Used
+# to clean all unversioned files from a SVN checkout.
+
+svn st --no-ignore | egrep '^(I|\?)' | awk '{print $NF}'

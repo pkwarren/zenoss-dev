@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# Builds the Zenoss Event Processor (and optionally any dependencies). Supports
+# building just the .war file (for most changes this is enough) or the .tar
+# distribution (if startup or configuration defaults change).
+
+set -e
+args="$@"
+build_deps=0
+build_type="war"
+maven_opts=""
+while [ $# -gt 0 ]; do
+    arg=$1
+    shift
+    case "$arg" in
+        -deps)
+            build_deps=1
+            ;;
+        -type)
+            build_type=$1
+            shift
+            ;;
+        -skiptests)
+            maven_opts="-DskipTests=true -DskipITs=true $maven_opts"
+            ;;
+        *)
+            echo "Usage: $0 [-deps] [-skiptests] [-type {war|tar}]"
+            exit 1
+            ;;
+    esac
+done
+
+[ $build_deps -eq 1 ] && build-protocols -deps
+taropts="zxf"
+case `uname -s` in
+    Darwin)
+        taropts="zxPf"
+        ;;
+    Linux)
+        taropts="zxhf"
+        ;;
+esac
+
+zeneventserver stop
+rm -rf $ZENHOME/webapps/zenoss-zep $ZENHOME/webapps/zeneventserver || return 1
+pushd $ZENSRC/zep > /dev/null
+case "$build_type" in
+    war)
+        echo "Deploying new ZEP war file..."
+        mvn $maven_opts -q clean package install || return 1
+        unzip -q webapp/target/zep-webapp-*.war -d $ZENHOME/webapps/zeneventserver || return 1
+        ;;
+    tar)
+        rm -rf $ZENHOME/bin/zenoss-zep* $ZENHOME/bin/zeneventserver* $ZENHOME/etc/zenoss-zep $ZENHOME/etc/zeneventserver $ZENHOME/share/zenoss-zep $ZENHOME/share/zeneventserver || return 1
+        echo "Deploying new ZEP distribution..."
+        mvn $maven_opts -q clean package install
+        tar $taropts dist/target/zep-dist-*.tar.gz -C $ZENHOME || return 1
+        ;;
+    *)
+        echo "Invalid build type: $build_type"
+        return 1
+        ;;
+esac
+popd > /dev/null

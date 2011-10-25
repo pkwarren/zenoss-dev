@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Removes all Zenoss RabbitMQ information and re-initializes the known vhosts
+# with the appropriate permissions for the Zenoss user.
+
 set -e
 
 VHOSTS="/zenoss /zenoss-test"

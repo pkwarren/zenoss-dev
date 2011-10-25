@@ -1,4 +1,7 @@
 #!/bin/bash
 
+# Removes all cached items in memcached (sometimes required when rebuilding if
+# memcached has old ZODB objects stored).
+
 echo flush_all | nc 127.0.0.1 11211 > /dev/null 2>&1
 exit $?

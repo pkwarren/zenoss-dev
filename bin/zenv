@@ -1,6 +1,32 @@
 #!/bin/bash
 
-if [ -n "$1" ]; then
-    export ZENREL="$1"
-fi
-exec bash --rcfile $HOME/.zenossrc
+# Entry point into a Zenoss development environment. This script will create
+# a working area for a Zenoss release, and optionally check out the source code
+# for the release. Once you are in the Zenoss environment (zenv) for a
+# particular release, you have all of the appropriate Zenoss settings set in
+# the environment (ZENHOME, INSTANCE_HOME, PYTHONPATH, PATH), however they are
+# set in a subshell to not require changes to the overall user account. This
+# allows for working in parallel on multiple releases.
+# 
+# Examples:
+#   $ zenv
+#   --> Launches an environment for developing Zenoss trunk code.
+#   $ zenv 4.1.x
+#   --> Launches an environment for developing Zenoss 4.1.x branch code.
+#   $ zenv 4.1.0
+#   --> Launches an environment for developing on the Zenoss 4.1.0 tag.
+#
+# TODO:
+# - Allow saving state of a Zenoss environment for quick repopulation of ZODB,
+#   events and queues.
+
+dirname=`dirname "$0"`
+basedir=`cd "$dirname/.." && pwd`
+
+ZENOSS_DEV_HOME="$basedir"
+export ZENOSS_DEV_HOME
+
+ZENREL=${1:-"trunk"}
+export ZENREL
+
+exec bash --rcfile "$basedir/zenossrc"

@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Speeds up source builds by creating tar files of symlinks to the already
+# checked out source code in inst/libzenoss (which is used for official builds).
+# This bypasses checking out additional code from SVN when it is already
+# checked out on disk.
+
+set -e
+INST_DIR="$ZENSRC/inst"
+
+[ -z "$ZENHOME" ] && echo "ZENHOME not set" && exit 1
+[ ! -d "$INST_DIR" ] && echo "Unable to find inst directory" && exit 1
+pushd "$INST_DIR" > /dev/null
+rm -rf libzenoss
+mkdir libzenoss
+pushd libzenoss > /dev/null
+for d in bin Products inst/fs java protocols zep; do
+    destdir="$d"
+    if [ "$d" = "inst/fs" ]; then
+        destdir="extras"
+    fi
+    if [ -d "$ZENSRC/$d" ]; then
+        ln -s "$ZENSRC/$d" "$destdir"
+        tar zcf $destdir.tar.gz $destdir
+        rm -f $destdir
+    fi
+done
+popd > /dev/null #libzenoss
+popd > /dev/null #inst

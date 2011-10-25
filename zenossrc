@@ -1,0 +1,122 @@
+#!/bin/bash
+
+[ -z "$ZENREL" ] && echo "ZENREL not set" && exit 1
+
+# Load user's environment settings
+for src in .profile .bash_profile .bashrc; do
+    if [ -f "$HOME/$src" ]; then
+        . "$HOME/$src"
+        break
+    fi
+done
+
+find_source_core() {
+    local location="trunk/core"
+    case "$ZENREL" in
+        [0-9]*.[0-9]*.[0-9]*)
+            location="tags/core/zenoss-$ZENREL"
+            ;;
+        [0-9]*.[0-9]*.x)
+            location="branches/core/zenoss-$ZENREL"
+            ;;
+    esac
+    echo "$location"
+}
+
+find_source_enterprise() {
+    local location="trunk/enterprise"
+    case "$ZENREL" in
+        [0-9]*.[0-9]*.[0-9]*)
+            location="tags/zenoss-$ZENREL"
+            ;;
+        [0-9]*.[0-9]*.x)
+            location="branches/zenoss-$ZENREL"
+            ;;
+    esac
+    echo "$location"
+}
+
+DEV_ROOT=$HOME/Projects/zenoss
+DEV_HOME=$DEV_ROOT/$ZENREL
+export ZENHOME=$DEV_HOME/home
+[ ! -d "$ZENHOME" ] && mkdir -p "$ZENHOME"
+export INSTANCE_HOME=$ZENHOME
+export ZENSRC=$DEV_HOME/core
+export ZENOSS_SVN_ROOT="http://dev.zenoss.com/svnint"
+if [ ! -d "$ZENSRC" ]; then
+    echo -n "Extract core? [Y/n]: "
+    read extract
+    case "$extract" in
+        [nN])
+            ;;
+        *)
+            zenoss_core=""
+            zenoss_core_default=`find_source_core`
+            while [ -z "$zenoss_core" ]; do
+                echo -n "Zenoss Core Release [$zenoss_core_default]: "
+                read zenoss_core
+                zenoss_core=${zenoss_core:-"$zenoss_core_default"}
+                svn --non-interactive info "$ZENOSS_SVN_ROOT/$zenoss_core/inst" > /dev/null
+                if [ $? -ne 0 ]; then
+                    echo "Invalid SVN url: $ZENOSS_SVN_ROOT/$zenoss_core" >&2
+                    zenoss_core=""
+                fi
+            done
+            svn --non-interactive checkout "$ZENOSS_SVN_ROOT/$zenoss_core" "$ZENSRC"
+            ;;
+    esac
+fi
+export ZENENTSRC=$DEV_HOME/enterprise
+if [ ! -d "$ZENENTSRC" ]; then
+    echo -n "Extract enterprise? [Y/n]: "
+    read extract
+    case "$extract" in
+        [nN])
+            ;;
+        *)
+            zenoss_enterprise=""
+            zenoss_enterprise_default=`find_source_enterprise`
+            while [ -z "$zenoss_enterprise" ]; do
+                echo -n "Zenoss Enterprise Release [$zenoss_enterprise_default]: "
+                read zenoss_enterprise
+                zenoss_enterprise=${zenoss_enterprise:-"$zenoss_enterprise_default"}
+                svn --non-interactive info "$ZENOSS_SVN_ROOT/$zenoss_enterprise/zenpacks/ZenPacks.zenoss.EnterpriseSkin" > /dev/null
+                if [ $? -ne 0 ]; then
+                    echo "Invalid SVN url: $ZENOSS_SVN_ROOT/$zenoss_enterprise" >&2 zenoss_enterprise=""
+                fi
+            done
+            svn --non-interactive checkout "$ZENOSS_SVN_ROOT/$zenoss_enterprise/zenpacks" "$ZENENTSRC"
+            ;;
+    esac
+fi
+export RRDDEPS_SKIP=1
+if [ `uname -s` = "Darwin" ]; then
+    export BUILD64=1
+fi
+
+# Add zenoss-dev/bin to PATH if it isn't already
+echo "$PATH" | grep -q "$ZENOSS_DEV_HOME/bin" 2>/dev/null
+if [ $? -ne 0 ]; then
+    PATH="$ZENOSS_DEV_HOME/bin:$PATH"
+fi
+
+PATH=$ZENHOME/bin:$PATH
+CCACHE_VERSION=$(ccache -V 2>/dev/null | head -1 | awk '{print $NF}')
+for dir in /usr/lib/ccache /usr/local/Cellar/ccache/$CCACHE_VERSION/libexec; do
+    if [ -d "$dir" ]; then
+        PATH="$dir:$PATH"
+        break
+    fi
+done
+unset CCACHE_VERSION
+export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
+export PYTHONPATH=$ZENHOME/lib/python${PYTHONPATH:+":$PYTHONPATH"}
+export PS1="(zenoss $ZENREL) $PS1"
+
+alias cdz="cd $ZENHOME && ls"
+alias cdp="cd $ZENHOME/Products && ls"
+alias cdcore="cd $ZENSRC && ls"
+alias cdent="cd $ZENENTSRC && ls"
+alias cdinst="cd $ZENSRC/inst && ls"
+
+cd "$DEV_HOME" && ls

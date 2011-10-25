@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+# Removes a sandbox.
+
+import optparse
+import subprocess
+import sys
+
+CORE_BASE_URL = 'http://dev.zenoss.com/svnint'
+ENTERPRISE_BASE_URL = 'http://dev.zenoss.com/svnint'
+DEFAULT_USER = 'pwarren' # TODO: Load from config file
+
+parser = optparse.OptionParser(usage='usage: %prog [options] branch [...]')
+parser.add_option('-e', '--enterprise', action="store_true", dest="enterprise", default=False,
+                  help='Remove branch in enterprise')
+parser.add_option('-u', '--user', dest='user', default=DEFAULT_USER,
+                  help="Remove sandbox for user (default '%s')." % DEFAULT_USER)
+(options, args) = parser.parse_args()
+if len(args) == 0:
+    parser.error('Missing branch name')
+
+if options.enterprise:
+    base_url = ENTERPRISE_BASE_URL
+    sandbox_prefix = '%s/sandboxen/%s' % (base_url, options.user)
+else:
+    base_url = CORE_BASE_URL
+    sandbox_prefix = '%s/sandboxen/core/%s' % (base_url, options.user)
+
+sb_urls = []
+for branch in args:
+    sb_urls.append('%s/%s' % (sandbox_prefix, branch))
+
+cmd = ['svn' , 'rm']
+cmd.extend(sb_urls)
+print "Running: %s" % (' '.join(cmd))
+rc = subprocess.call(cmd)
+if rc != 0:
+    sys.exit(rc)

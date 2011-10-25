@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Wipes all of the known PostgreSQL databases on the system.
+
 set -e
 psql -q -1 -v ON_ERROR_STOP=1 --pset pager=off -d postgres <<EOF
 SET client_min_messages to WARNING;

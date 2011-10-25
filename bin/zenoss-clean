@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Completely wipes a Zenoss environment (when rebuilding from scratch). This
+# removes $ZENHOME and wipes all known datastores.
+
 [ -z "$ZENHOME" ] && echo "ZENHOME not set" && exit 1
 [ -x "$ZENHOME/bin/zenoss" ] && "$ZENHOME/bin/zenoss" stop
 rm -rf "$ZENHOME"/*

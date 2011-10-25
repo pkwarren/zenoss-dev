@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+
+# Creates a sandbox.
+
+import optparse
+import subprocess
+import sys
+
+CORE_BASE_URL = 'http://dev.zenoss.com/svnint'
+ENTERPRISE_BASE_URL = 'http://dev.zenoss.com/svnint'
+DEFAULT_USER = 'pwarren' # TODO: Load from config file
+
+parser = optparse.OptionParser(usage='usage: %prog [options] branch_name')
+parser.add_option('-b', '--branch', dest="branch", default='trunk',
+                  help="Branch to use (default: 'trunk').")
+parser.add_option('-e', '--enterprise', action="store_true", dest="enterprise", default=False,
+                  help='Create branch in enterprise')
+parser.add_option('-u', '--user', dest='user', default=DEFAULT_USER,
+                  help="Create sandbox for user (default '%s')." % DEFAULT_USER)
+(options, args) = parser.parse_args()
+if len(args) != 1:
+    parser.error('Missing branch name')
+branch_name = args[0]
+
+if options.enterprise:
+    base_url = ENTERPRISE_BASE_URL
+    if options.branch == 'trunk':
+        src_url = '%s/%s/enterprise' % (base_url, options.branch)
+    else:
+        src_url = '%s/branches/%s' % (base_url, options.branch)
+    dest_url = '%s/sandboxen/%s/%s' % (base_url, options.user, branch_name)
+else:
+    base_url = CORE_BASE_URL
+    if options.branch == 'trunk':
+        src_url = '%s/%s/core' % (base_url, options.branch)
+    else:
+        src_url = '%s/branches/core/%s' % (base_url, options.branch)
+    dest_url = '%s/sandboxen/core/%s/%s' % (base_url, options.user, branch_name)
+
+cmd = ['svn' , 'cp', src_url, dest_url]
+print "Running: %s" % (' '.join(cmd))
+rc = subprocess.call(cmd)
+if rc != 0:
+    sys.exit(rc)

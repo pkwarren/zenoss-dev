@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Builds the Java and Python protocols code. The Java code is installed into
+# the local Maven repository, and the Python code is installed in develop mode
+# into the Zenoss Python interpreter. This script should be run after any change
+# to protobuf code so that all downstream consumers can pick up the new
+# definitions. Java projects should rebuild to include the updated jar file
+# with the new protobuf classes.
+
+args="$@"
+build_deps=0
+while [ $# -gt 0 ]; do
+    arg=$1
+    shift
+    case "$arg" in
+        -deps)
+            build_deps=1
+            ;;
+        *)
+            echo "Usage: $0 [-deps]"
+            exit 1
+            ;;
+    esac
+done
+
+[ $build_deps -eq 1 ] && build-java "$args"
+
+zenoss stop
+
+pushd $ZENSRC/protocols > /dev/null
+mvn -q clean install || return 1
+
+# Set up zenoss.protocols in develop mode
+rm -rf $ZENHOME/lib/python/zenoss.protocols* || return 1
+rm -rf $ZENHOME/lib/python/zenoss/protocols || return 1
+pushd python > /dev/null
+make clean build || return 1
+python setup.py develop || return 1
+#python setup.py test || return 1
+
+popd > /dev/null
+popd > /dev/null

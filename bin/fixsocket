@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Sets the appropriate permissions on the zensocket and pyraw (4.x) setuid
+# executables used by Zenoss.
+
+set -e
+
+[ -z "$ZENHOME" ] && echo "ZENHOME not specified" && exit 1
+GROUP=`id -gn` || exit 1
+
+for file in zensocket pyraw; do
+    abspath="$ZENHOME/bin/$file"
+    if [ -f "$abspath" ]; then
+        sudo chown -f root:$GROUP "$abspath"
+        sudo chmod -f 4750 "$abspath"
+    fi
+done
