@@ -4,13 +4,18 @@
 
 zenoss-clean
 pushd $ZENSRC > /dev/null
-svn-ignored | xargs rm -rf
-svn up
+if [ -d .svn ]; then
+    svn-ignored | xargs rm -rf
+    svn up
+elif [ -d .git ]; then
+    git svn rebase
+    git clean -f -d -x
+fi
 pushd inst > /dev/null
 link-products
 time ./install.sh --no-prompt
 zenoss stop
 perl -pi -e 's/#    debug-mode on/debug-mode on/' $ZENHOME/etc/zope.conf
-build_protocols
+build-protocols
 popd > /dev/null
 popd > /dev/null

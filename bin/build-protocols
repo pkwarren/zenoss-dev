@@ -28,15 +28,15 @@ done
 zenoss stop
 
 pushd $ZENSRC/protocols > /dev/null
-mvn -q clean install || return 1
+mvn -q clean install || exit 1
 
 # Set up zenoss.protocols in develop mode
-rm -rf $ZENHOME/lib/python/zenoss.protocols* || return 1
-rm -rf $ZENHOME/lib/python/zenoss/protocols || return 1
+rm -rf $ZENHOME/lib/python/zenoss.protocols* || exit 1
+rm -rf $ZENHOME/lib/python/zenoss/protocols || exit 1
 pushd python > /dev/null
-make clean build || return 1
-python setup.py develop || return 1
-#python setup.py test || return 1
+make clean build || exit 1
+python setup.py develop || exit 1
+#python setup.py test || exit 1
 
 popd > /dev/null
 popd > /dev/null
