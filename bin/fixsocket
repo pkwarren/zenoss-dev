@@ -8,7 +8,7 @@ set -e
 [ -z "$ZENHOME" ] && echo "ZENHOME not specified" && exit 1
 GROUP=`id -gn` || exit 1
 
-for file in zensocket pyraw; do
+for file in zensocket pyraw nmap; do
     abspath="$ZENHOME/bin/$file"
     if [ -f "$abspath" ]; then
         sudo chown -f root:$GROUP "$abspath"
