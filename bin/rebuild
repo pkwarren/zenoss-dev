@@ -14,6 +14,7 @@ fi
 pushd inst > /dev/null
 link-products
 time ./install.sh --no-prompt
+make clean
 zenoss stop
 perl -pi -e 's/#    debug-mode on/debug-mode on/' $ZENHOME/etc/zope.conf
 build-protocols
