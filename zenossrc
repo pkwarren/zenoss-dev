@@ -113,6 +113,10 @@ export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
 export PYTHONPATH=$ZENHOME/lib/python${PYTHONPATH:+":$PYTHONPATH"}
 export PS1="(zenoss $ZENREL) $PS1"
 
+if [ -e "$HOME/.pystartup" ]; then
+    export PYTHONSTARTUP="$HOME/.pystartup"
+fi
+
 alias cdz="cd $ZENHOME && ls"
 alias cdp="cd $ZENHOME/Products && ls"
 alias cdcore="cd $ZENSRC && ls"

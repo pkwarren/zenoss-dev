@@ -12,8 +12,8 @@ elif [ -d .git ]; then
     git clean -f -d -x
 fi
 pushd inst > /dev/null
-link-products
-time ./install.sh --no-prompt
+link-products || exit 1
+time ./install.sh "$@" || exit 1
 make clean
 zenoss stop
 perl -pi -e 's/#    debug-mode on/debug-mode on/' $ZENHOME/etc/zope.conf
