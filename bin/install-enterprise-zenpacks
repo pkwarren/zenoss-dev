@@ -1,11 +1,9 @@
 #!/bin/bash
 
-#zenpacks="DynamicView StorageBase HpuxMonitor SolarisMonitor EnterpriseReports EnterpriseSkin TomcatMonitor JBossMonitor WebLogicMonitor LDAPAuthenticator ZenWinPerf MSSQLServer RANCIDIntegrator ZenDeviceACL ZenHoltWinters ZenMailTx ZenSQLTx ZenWebTx MSExchange IISMonitor VMwareESXMonitor ActiveDirectory NetAppMonitor BigIpMonitor CiscoMonitor ZenVMware JuniperMonitor NetScreenMonitor NortelMonitor SugarCRMMonitor WinModelerPlugins ZenOperatorRole BrocadeMonitor WebsphereMonitor AixMonitor EnterpriseLinux CheckPointMonitor AdvancedSearch EnterpriseCollector Diagram CiscoUCS vCloud EnterpriseSecurity DistributedCollector"
-# All but LDAP
-zenpacks="DynamicView StorageBase HpuxMonitor SolarisMonitor EnterpriseReports EnterpriseSkin TomcatMonitor JBossMonitor WebLogicMonitor ZenWinPerf MSSQLServer RANCIDIntegrator ZenDeviceACL ZenHoltWinters ZenMailTx ZenSQLTx ZenWebTx MSExchange IISMonitor VMwareESXMonitor ActiveDirectory NetAppMonitor BigIpMonitor CiscoMonitor ZenVMware JuniperMonitor NetScreenMonitor NortelMonitor SugarCRMMonitor WinModelerPlugins ZenOperatorRole BrocadeMonitor WebsphereMonitor AixMonitor EnterpriseLinux CheckPointMonitor AdvancedSearch EnterpriseCollector Diagram CiscoUCS vCloud EnterpriseSecurity DistributedCollector"
+zenpacks="AuditLog DynamicView StorageBase HpuxMonitor SolarisMonitor EnterpriseReports EnterpriseSkin TomcatMonitor JBossMonitor WebLogicMonitor LDAPAuthenticator ZenWinPerf MSSQLServer RANCIDIntegrator ZenDeviceACL ZenHoltWinters ZenMailTx ZenSQLTx ZenWebTx MSExchange IISMonitor VMwareESXMonitor ActiveDirectory NetAppMonitor BigIpMonitor CiscoMonitor Nexus7k ZenVMware JuniperMonitor NetScreenMonitor NortelMonitor SugarCRMMonitor WinModelerPlugins ZenOperatorRole BrocadeMonitor WebsphereMonitor AixMonitor EnterpriseLinux CheckPointMonitor AdvancedSearch EnterpriseCollector Diagram CiscoUCS vCloud EnterpriseSecurity DistributedCollector"
 pushd $ZENENTSRC > /dev/null
 for pack in $zenpacks; do
     full_pack="ZenPacks.zenoss.$pack"
-    [ -d "$full_pack" ] && zenpack --link --install "$full_pack"
+    [ -d "$full_pack" ] && zenpack --link --install "$full_pack" || exit 1
 done
 popd > /dev/null
