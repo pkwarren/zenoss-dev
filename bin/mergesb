@@ -5,33 +5,69 @@
 import optparse
 import subprocess
 import sys
+from os.path import join, dirname, abspath, isdir
 
-CORE_BASE_URL = 'http://dev.zenoss.com/svnint'
-DEFAULT_USER = 'pwarren'
-ENTERPRISE_BASE_URL = 'http://dev.zenoss.com/svnint'
+libdir = abspath(join(dirname(__file__), '../lib/python'))
+if not isdir(libdir):
+    print >> sys.stderr, "Failed to find library files in: %s" % libdir
+    sys.exit(1)
+sys.path.append(libdir)
 
-parser = optparse.OptionParser(usage='usage: %prog [options] branch_name')
-parser.add_option('-e', '--enterprise', action="store_true", dest="enterprise", default=False,
-                  help='Merge from branch in enterprise')
-parser.add_option('-u', '--user', dest='user', default=DEFAULT_USER,
-                  help="Merge from sandbox for user (default '%s')." % DEFAULT_USER)
+from zenoss.dev import sandbox
+
+config = sandbox.load_config()
+
+usage = """\
+%prog [options] <sandbox_name>
+
+Merges the specified sandbox into the currently checked out SVN repository.
+Assumes that enterprise sandboxes are branched from trunk/enterprise instead 
+of trunk/enterprise/zenpacks (this is how 'mksb' works).
+
+Examples:
+    $ mergesb feature
+      # Merges sandbox named 'feature' into the SVN working copy.
+
+    $ mergesb -u username --dry-run your_sandbox
+      # Tests merging <username>'s sandbox named 'your_sandbox' into the SVN
+      # working copy.\
+"""
+parser = optparse.OptionParser(usage=usage)
+parser.add_option('-u', '--user', dest='user', default=config.svn_username,
+                  help="Merge from sandbox for user (default %default).")
+parser.add_option('--dry-run', dest='dry_run', action='store_true',
+                  help="Try operation but make no changes.")
+parser.add_option('--reintegrate', dest='reintegrate', action='store_true',
+                  help="Merge all of sandbox's unmerged changes. "
+                       "Not recommended for enterprise sandboxes.")
 (options, args) = parser.parse_args()
-if len(args) != 1:
+if not args:
     parser.error('Missing branch name')
+if len(args) > 1:
+    parser.error('Only one branch expected')
+if not options.user:
+    parser.error('User must be specified in %s or via the -u/--user option' % 
+                 sandbox.CONFIG_FILE)
 branch_name = args[0]
 
-if options.enterprise:
-    base_url = ENTERPRISE_BASE_URL
-    sb_url = '%s/sandboxen/%s/%s/zenpacks' % (base_url, options.user, branch_name)
-else:
-    base_url = CORE_BASE_URL
-    sb_url = '%s/sandboxen/core/%s/%s' % (base_url, options.user, branch_name)
+try:
+    root = sandbox.find_root_checkout()
+    sb_url = sandbox.find_branch_url(root, branch_name, options.user)
+    is_enterprise = sandbox.is_enterprise(root)
 
-cmd = ['svn' , 'merge']
-if not options.enterprise:
-    cmd.append('--reintegrate')
-cmd.append(sb_url)
-print "Running: %s" % (' '.join(cmd))
-rc = subprocess.call(cmd)
-if rc != 0:
-    sys.exit(rc)
+    cmd = ['svn' , 'merge']
+    if options.reintegrate:
+        if is_enterprise:
+            print >> sys.stderr, \
+                "WARN: Merging from enterprise has problems with --reintegrate"
+        cmd.append('--reintegrate')
+    if options.dry_run:
+        cmd.append('--dry-run')
+    cmd.extend([sb_url, root])
+    print ' '.join(cmd)
+    rc = subprocess.call(cmd)
+    if rc != 0:
+        sys.exit(rc)
+except Exception, e:
+    print >> sys.stderr, "Failed: %s" % e
+    sys.exit(1)

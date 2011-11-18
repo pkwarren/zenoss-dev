@@ -1,6 +1,8 @@
 Basic utilities used for Zenoss development.
 
-Usage:
+USAGE
+=====
+
 1) Add this to your .bashrc/.profile:
 
 alias zenv=<path_to_this_directory>/bin/zenv
@@ -14,3 +16,13 @@ zenv command for more information on its usage.
 
 If you use (2), then you can use any of the companion scripts in bin/
 standalone or use 'zenv' to manage your Zenoss development environments.
+
+CONFIGURATION
+=============
+
+For using the sandbox tools ('chsb', 'lssb', 'mergesb', 'mksb', 'rmsb'), you
+will want to configure the following file (replace <your_username> with your
+SVN username):
+
+echo "svn_username = <your_username>" > ~/.zenossdev
+

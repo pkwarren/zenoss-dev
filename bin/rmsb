@@ -5,34 +5,63 @@
 import optparse
 import subprocess
 import sys
+import fnmatch
+from os.path import join, dirname, abspath, isdir
 
-CORE_BASE_URL = 'http://dev.zenoss.com/svnint'
-ENTERPRISE_BASE_URL = 'http://dev.zenoss.com/svnint'
-DEFAULT_USER = 'pwarren' # TODO: Load from config file
+libdir = abspath(join(dirname(__file__), '../lib/python'))
+if not isdir(libdir):
+    print >> sys.stderr, "Failed to find library files in: %s" % libdir
+    sys.exit(1)
+sys.path.append(libdir)
 
-parser = optparse.OptionParser(usage='usage: %prog [options] branch [...]')
-parser.add_option('-e', '--enterprise', action="store_true", dest="enterprise", default=False,
+from zenoss.dev import sandbox
+
+config = sandbox.load_config()
+
+usage = """\
+%prog [options] <sandbox_pattern> [sandbox_pattern]...
+
+Removes sandboxes matching the specified patterns. When deleting, SVN launches
+the appropriate editor to allow specifying a commit message or aborting the
+removal of the sandbox.
+
+Examples:
+    $ rmsb mybranch
+      # Removes the sandbox 'mybranch'.
+
+    $ rmsb -e 'old*' --dry-run
+      # Tests removing all enterprise sandboxes starting with 'old'.
+"""
+parser = optparse.OptionParser(usage=usage)
+parser.add_option('-e', '--enterprise', action="store_true", dest="enterprise",
                   help='Remove branch in enterprise')
-parser.add_option('-u', '--user', dest='user', default=DEFAULT_USER,
-                  help="Remove sandbox for user (default '%s')." % DEFAULT_USER)
+parser.add_option('-u', '--user', dest='user', default=config.svn_username,
+                  help="Remove sandbox for user (default '%default').")
+parser.add_option('--dry-run', dest='dry_run', action='store_true',
+                  help="Try operation but make no changes.")
 (options, args) = parser.parse_args()
-if len(args) == 0:
+if not args:
     parser.error('Missing branch name')
+if not options.user:
+    parser.error('User must be specified in %s or via the -u/--user option' % 
+                 sandbox.CONFIG_FILE)
 
+cmd = ['lssb', options.user, '--url', '-u', options.user]
 if options.enterprise:
-    base_url = ENTERPRISE_BASE_URL
-    sandbox_prefix = '%s/sandboxen/%s' % (base_url, options.user)
-else:
-    base_url = CORE_BASE_URL
-    sandbox_prefix = '%s/sandboxen/core/%s' % (base_url, options.user)
-
-sb_urls = []
-for branch in args:
-    sb_urls.append('%s/%s' % (sandbox_prefix, branch))
-
+    cmd.append('-e')
+cmd.extend(args)
+p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+stdout, stderr = p.communicate()
+if p.returncode != 0:
+    sys.exit(p.returncode)
+sb_urls = stdout.splitlines()
+if not sb_urls:
+    print >> sys.stderr, "No sandboxes matching: %s" % ' '.join(args)
+    sys.exit(1)
 cmd = ['svn' , 'rm']
 cmd.extend(sb_urls)
-print "Running: %s" % (' '.join(cmd))
-rc = subprocess.call(cmd)
-if rc != 0:
-    sys.exit(rc)
+print ' '.join(cmd)
+if not options.dry_run:
+    rc = subprocess.call(cmd)
+    if rc != 0:
+        sys.exit(rc)

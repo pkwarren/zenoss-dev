@@ -5,19 +5,50 @@
 import optparse
 import subprocess
 import sys
+import fnmatch
+from os.path import join, dirname, abspath, isdir
+
+libdir = abspath(join(dirname(__file__), '../lib/python'))
+if not isdir(libdir):
+    print >> sys.stderr, "Failed to find library files in: %s" % libdir
+    sys.exit(1)
+sys.path.append(libdir)
+
+from zenoss.dev import sandbox
 
 CORE_BASE_URL = 'http://dev.zenoss.com/svnint'
 ENTERPRISE_BASE_URL = 'http://dev.zenoss.com/svnint'
-DEFAULT_USER = 'pwarren' # TODO: Load from config file
 
-parser = optparse.OptionParser(usage='usage: %prog [options]')
-parser.add_option('-e', '--enterprise', action="store_true", dest="enterprise", default=False,
-                  help='Display enterprise branches.')
-parser.add_option('-u', '--user', dest='user', default=DEFAULT_USER,
-                  help="SVN username (default '%s')." % DEFAULT_USER)
-parser.add_option('-v', '--verbose', dest='verbose', action='store_true', default=False,
-                  help='Show verbose information')
+config = sandbox.load_config()
+
+usage = """\
+%prog [options] [sandbox_pattern]...
+
+Lists sandboxes matching the specified patterns. If no pattern is specified,
+then all sandboxes are listed.
+
+Examples:
+    $ lssb
+      # Shows all of your configured core sandboxes.
+
+    $ lssb -e 'feature*' 'other*sb'
+      # Shows all enterprise sandboxes which match the specified patterns. Uses
+      # fnmatch for matching sandbox names.
+
+    $ lssb --url
+      # Shows the full path to the sandbox (useful as input to other commands).\
+"""
+parser = optparse.OptionParser(usage=usage)
+parser.add_option('-e', '--enterprise', action="store_true", dest="enterprise",
+                  default=False, help='Display enterprise branches.')
+parser.add_option('-u', '--user', dest='user', default=config.svn_username,
+                  help="SVN username (default %default).")
+parser.add_option('--url', dest='url', action="store_true",
+                  help="Display full URL of sandbox.")
 (options, args) = parser.parse_args()
+if not options.user:
+    parser.error('User must be specified in %s or via the -u/--user option' % 
+                 sandbox.CONFIG_FILE)
 
 if options.enterprise:
     url = '%s/sandboxen/%s' % (ENTERPRISE_BASE_URL, options.user)
@@ -25,16 +56,25 @@ else:
     url = '%s/sandboxen/core/%s' % (CORE_BASE_URL, options.user)
 
 # TODO: Use --xml and sort by date descending
-cmd = ['svn', 'ls']
-if options.verbose:
-    cmd.append('-v')
-cmd.append(url)
+cmd = ['svn', 'ls', url]
 p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-for line in p.stdout:
+stdout, stderr = p.communicate()
+if p.returncode != 0:
+    sys.exit(p.returncode)
+for line in stdout.splitlines():
     line = line.strip()
     if line[-1] == '/':
         line = line[0:-1]
-    print "%s/%s" % (url, line)
-p.wait()
-if p.returncode != 0:
-    sys.exit(p.returncode)
+    sbname = line.split('/')[-1]
+
+    if args:
+        for pattern in args:
+            if fnmatch.fnmatch(sbname, pattern):
+                break
+        else:
+            continue
+
+    if options.url:
+        print "%s/%s" % (url, sbname)
+    else:
+        print sbname
