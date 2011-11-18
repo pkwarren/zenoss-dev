@@ -14,7 +14,7 @@ if not isdir(libdir):
     sys.exit(1)
 sys.path.append(libdir)
 
-from zenoss.dev import sandbox
+from zenossdev import sandbox
 
 CORE_BASE_URL = 'http://dev.zenoss.com/svnint'
 ENTERPRISE_BASE_URL = 'http://dev.zenoss.com/svnint'
