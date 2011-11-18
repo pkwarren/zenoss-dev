@@ -28,7 +28,11 @@ done
 zenoss stop
 
 pushd $ZENSRC/protocols > /dev/null
-mvn -q clean install || exit 1
+POM=pom.xml
+if [ ! -f $POM ]; then
+    POM=java/pom.xml
+fi
+mvn -q -f $POM clean install || exit 1
 
 # Set up zenoss.protocols in develop mode
 rm -rf $ZENHOME/lib/python/zenoss.protocols* || exit 1
