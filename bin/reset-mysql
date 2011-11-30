@@ -9,4 +9,5 @@ drop database if exists zenoss_zep;
 drop database if exists zenoss_zep_dev;
 drop database if exists zenoss_zep_test;
 drop database if exists zodb;
+drop database if exists zodb_session;
 EOF
