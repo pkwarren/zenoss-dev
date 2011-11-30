@@ -5,6 +5,7 @@
 # distribution (if startup or configuration defaults change).
 
 set -e
+
 args="$@"
 build_deps=0
 build_type="war"
@@ -42,23 +43,22 @@ case `uname -s` in
 esac
 
 [ -x "$ZENHOME/bin/zeneventserver" ] && zeneventserver stop
-rm -rf $ZENHOME/webapps/zenoss-zep $ZENHOME/webapps/zeneventserver || exit 1
+rm -rf $ZENHOME/webapps/zenoss-zep $ZENHOME/webapps/zeneventserver
 pushd $ZENSRC/zep > /dev/null
 case "$build_type" in
     war)
         echo "Deploying new ZEP war file..."
-        mvn $maven_opts -q clean package install || exit 1
-        unzip -q webapp/target/zep-webapp-*.war -d $ZENHOME/webapps/zeneventserver || exit 1
+        mvn $maven_opts -q clean package install
+        unzip -q webapp/target/zep-webapp-*.war -d $ZENHOME/webapps/zeneventserver
         ;;
     tar)
-        rm -rf $ZENHOME/bin/zenoss-zep* $ZENHOME/bin/zeneventserver* $ZENHOME/etc/zenoss-zep $ZENHOME/etc/zeneventserver $ZENHOME/share/zenoss-zep $ZENHOME/share/zeneventserver || exit 1
+        rm -rf $ZENHOME/bin/zenoss-zep* $ZENHOME/bin/zeneventserver* $ZENHOME/etc/zenoss-zep $ZENHOME/etc/zeneventserver $ZENHOME/share/zenoss-zep $ZENHOME/share/zeneventserver
         echo "Deploying new ZEP distribution..."
         mvn $maven_opts -q clean package install
-        tar $taropts dist/target/zep-dist-*.tar.gz -C $ZENHOME || exit 1
+        tar $taropts dist/target/zep-dist-*.tar.gz -C $ZENHOME
         ;;
     *)
         echo "Invalid build type: $build_type"
         exit 1
         ;;
 esac
-popd > /dev/null

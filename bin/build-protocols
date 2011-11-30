@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Builds the Java and Python protocols code. The Java code is installed into
 # the local Maven repository, and the Python code is installed in develop mode
 # into the Zenoss Python interpreter. This script should be run after any change
@@ -32,15 +34,12 @@ POM=pom.xml
 if [ ! -f $POM ]; then
     POM=java/pom.xml
 fi
-mvn -q -f $POM clean install || exit 1
+mvn -q -f $POM clean install
 
 # Set up zenoss.protocols in develop mode
-rm -rf $ZENHOME/lib/python/zenoss.protocols* || exit 1
-rm -rf $ZENHOME/lib/python/zenoss/protocols || exit 1
+rm -rf $ZENHOME/lib/python/zenoss.protocols*
+rm -rf $ZENHOME/lib/python/zenoss/protocols
 pushd python > /dev/null
-make clean build || exit 1
-python setup.py develop || exit 1
-#python setup.py test || exit 1
-
-popd > /dev/null
-popd > /dev/null
+make clean build
+python setup.py develop
+#python setup.py test

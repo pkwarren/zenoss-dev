@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Rebuilds Zenoss (cleaning out any artifacts of previous build).
 
 zenoss-clean
@@ -12,11 +14,9 @@ elif [ -d .git ]; then
     git clean -f -d -x
 fi
 pushd inst > /dev/null
-link-products || exit 1
-time ./install.sh "$@" || exit 1
+link-products
+time ./install.sh "$@"
 make clean
 zenoss stop
 perl -pi -e 's/#    debug-mode on/debug-mode on/' $ZENHOME/etc/zope.conf
 build-protocols
-popd > /dev/null
-popd > /dev/null

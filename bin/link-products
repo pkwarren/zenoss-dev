@@ -25,5 +25,3 @@ for d in bin Products inst/fs java protocols zep; do
         rm -f $destdir
     fi
 done
-popd > /dev/null #libzenoss
-popd > /dev/null #inst

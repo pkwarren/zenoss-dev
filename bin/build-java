@@ -6,4 +6,3 @@
 set -e
 pushd $ZENSRC/java > /dev/null
 mvn -q clean install
-popd > /dev/null
