@@ -1,0 +1,3 @@
+#!/bin/bash
+
+exec /bin/bash --rcfile $ZENOSS_DEV_HOME/zenossrc "$@"

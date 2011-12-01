@@ -3,7 +3,7 @@
 [ -z "$ZENREL" ] && echo "ZENREL not set" && exit 1
 
 # Load user's environment settings
-for src in .profile .bash_profile .bashrc; do
+for src in .bash_profile .bash_login .profile .bashrc; do
     if [ -f "$HOME/$src" ]; then
         . "$HOME/$src"
         break
@@ -123,4 +123,6 @@ alias cdcore="cd $ZENSRC && ls"
 alias cdent="cd $ZENENTSRC && ls"
 alias cdinst="cd $ZENSRC/inst && ls"
 
-cd "$DEV_HOME" && ls
+if [ -z "$STY" ]; then
+    exec screen -c $ZENOSS_DEV_HOME/screenrc
+fi
