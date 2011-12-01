@@ -16,6 +16,10 @@ fi
 pushd inst > /dev/null
 link-products
 time ./install.sh "$@"
+find $ZENSRC -type f -a \( -name .build -o -name .extracted \) -exec rm -f {} \;
+rm -rf $ZENSRC/inst/libzenoss
+# Create Zope's __init__.py file for IntelliJ auto-completion to work properly
+touch $ZENHOME/lib/python/zope/__init__.py
 make clean
 zenoss stop
 perl -pi -e 's/#    debug-mode on/debug-mode on/' $ZENHOME/etc/zope.conf
