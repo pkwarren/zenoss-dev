@@ -1,4 +1,3 @@
-sessionname zenoss-$ZENREL
 source $HOME/.screenrc
 hardstatus on
 hardstatus alwayslastline
