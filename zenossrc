@@ -40,6 +40,7 @@ DEV_ROOT=$HOME/Projects/zenoss
 DEV_HOME=$DEV_ROOT/$ZENREL
 export ZENHOME=$DEV_HOME/home
 [ ! -d "$ZENHOME" ] && mkdir -p "$ZENHOME"
+[ ! -d "$DEV_HOME/workspace" ] && mkdir -p "$DEV_HOME/workspace"
 export INSTANCE_HOME=$ZENHOME
 export ZENSRC=$DEV_HOME/core
 export ZENOSS_SVN_ROOT="http://dev.zenoss.com/svnint"
@@ -48,6 +49,7 @@ if [ ! -d "$ZENSRC" ]; then
     read extract
     case "$extract" in
         [nN])
+            mkdir -p "$ZENSRC"
             ;;
         *)
             zenoss_core=""
@@ -72,6 +74,7 @@ if [ ! -d "$ZENENTSRC" ]; then
     read extract
     case "$extract" in
         [nN])
+            mkdir -p "$ZENENTSRC"
             ;;
         *)
             zenoss_enterprise=""
