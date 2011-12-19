@@ -1,9 +1,9 @@
 #!/bin/bash
 
 set -e
-zenpacks="ApacheMonitor DellMonitor DigMonitor DnsMonitor FtpMonitor HPMonitor HttpMonitor IRCDMonitor JabberMonitor LDAPMonitor MySqlMonitor NNTPMonitor NtpMonitor RPCMonitor ZenJMX LinuxMonitor ZenAWS ZenossVirtualHostMonitor EsxTop XenMonitor"
+INSTALL_ORDER=`awk '/%define zenpacks / { for (x=3; x<=NF; x++) { print $$x } }' $ZENSRC/zenpacks.spec`
 pushd $ZENSRC/zenpacks > /dev/null
-for pack in $zenpacks; do
+for pack in $INSTALL_ORDER; do
     full_pack="ZenPacks.zenoss.$pack"
     [ -d "$full_pack" ] && zenpack --link --install $full_pack
 done

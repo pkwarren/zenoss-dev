@@ -2,9 +2,9 @@
 
 set -e
 
-zenpacks="AutoTune AuditLog DynamicView StorageBase HpuxMonitor SolarisMonitor EnterpriseReports EnterpriseSkin TomcatMonitor JBossMonitor WebLogicMonitor LDAPAuthenticator ZenWinPerf MSSQLServer RANCIDIntegrator ZenDeviceACL ZenHoltWinters ZenMailTx ZenSQLTx ZenWebTx MSExchange IISMonitor VMwareESXMonitor ActiveDirectory NetAppMonitor BigIpMonitor CiscoMonitor Nexus7k ZenVMware JuniperMonitor NetScreenMonitor NortelMonitor SugarCRMMonitor WinModelerPlugins ZenOperatorRole BrocadeMonitor WebsphereMonitor AixMonitor EnterpriseLinux CheckPointMonitor AdvancedSearch EnterpriseCollector Diagram CiscoUCS vCloud WebScale EnterpriseSecurity DistributedCollector"
+INSTALL_ORDER=`awk '/%define zenpacks / { for (x=3; x<=NF; x++) { print $$x } }' $ZENENTSRC/zenpacks.spec`
 pushd $ZENENTSRC > /dev/null
-for pack in $zenpacks; do
+for pack in $INSTALL_ORDER; do
     full_pack="ZenPacks.zenoss.$pack"
     [ -d "$full_pack" ] && zenpack --link --install "$full_pack"
 done
