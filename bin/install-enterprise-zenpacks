@@ -2,7 +2,7 @@
 
 set -e
 
-INSTALL_ORDER=`awk '/%define zenpacks / { for (x=3; x<=NF; x++) { print $$x } }' $ZENENTSRC/zenpacks.spec`
+INSTALL_ORDER=`grep '^%define zenpacks ' $ZENENTSRC/zenpacks.spec | sed -e 's|^%define zenpacks ||'`
 pushd $ZENENTSRC > /dev/null
 for pack in $INSTALL_ORDER; do
     full_pack="ZenPacks.zenoss.$pack"
