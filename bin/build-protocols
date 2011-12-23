@@ -27,7 +27,7 @@ done
 
 [ $build_deps -eq 1 ] && build-java "$args"
 
-zenoss stop
+zenoss stop || :
 
 pushd $ZENSRC/protocols > /dev/null
 POM=pom.xml
