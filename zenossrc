@@ -39,8 +39,26 @@ find_source_enterprise() {
 DEV_ROOT=$HOME/Projects/zenoss
 DEV_HOME=$DEV_ROOT/$ZENREL
 export ZENHOME=$DEV_HOME/home
-[ ! -d "$ZENHOME" ] && mkdir -p "$ZENHOME"
-[ ! -d "$DEV_HOME/workspace" ] && mkdir -p "$DEV_HOME/workspace"
+for d in "$ZENHOME" "$DEV_HOME/workspace" "$DEV_HOME/misc"; do
+    mkdir -p "$d"
+done
+if [ ! -f "$DEV_HOME/misc/settings.xml" ]; then
+    cat > "$DEV_HOME/misc/settings.xml" <<EOF
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                        http://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <profiles>
+    <profile>
+      <id>protoc-$ZENREL</id>
+      <properties>
+        <protoc.path>$ZENHOME/bin/protoc</protoc.path>
+      </properties>
+    </profile>
+  </profiles>
+</settings>
+EOF
+fi
 export INSTANCE_HOME=$ZENHOME
 export ZENSRC=$DEV_HOME/core
 export ZENOSS_SVN_ROOT="http://dev.zenoss.com/svnint"
