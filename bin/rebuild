@@ -10,7 +10,7 @@ if [ -d .svn ]; then
     svn-ignored | xargs rm -rf
     svn up
 elif [ -d .git ]; then
-    git svn rebase
+    git svn rebase || :
     git clean -f -d -x
 fi
 pushd inst > /dev/null
