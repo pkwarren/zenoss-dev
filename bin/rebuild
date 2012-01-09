@@ -28,7 +28,7 @@ rm -rf $ZENSRC/inst/libzenoss
 
 # Create Zope's __init__.py file for IntelliJ auto-completion to work properly
 for d in Products zope; do
-    touch $ZENHOME/lib/python/$d
+    touch $ZENHOME/lib/python/$d/__init__.py
 done
 
 make clean
