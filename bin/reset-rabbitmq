@@ -20,6 +20,8 @@ $RABBITMQCTL stop_app
 $RABBITMQCTL reset
 $RABBITMQCTL start_app
 $RABBITMQCTL add_user "$USER" "$PASS"
+# Allow Zenoss user to use the management plug-in
+$RABBITMQCTL set_user_tags "$USER" "administrator"
 for vhost in $VHOSTS; do
     $RABBITMQCTL add_vhost "$vhost"
     $RABBITMQCTL set_permissions -p "$vhost" "$USER" '.*' '.*' '.*'
