@@ -86,10 +86,11 @@ if [ ! -d "$ZENSRC" ]; then
                 fi
             done
             if [ -d "$LOCAL_SVN_PATH" ]; then
-                svn --non-interactive checkout "$LOCAL_SVN_ROOT/$zenoss_core" "$ZENSRC"
-                svn --non-interactive switch "$ZENOSS_SVN_ROOT/$zenoss_core" "$ZENSRC"
+                svn --non-interactive -q checkout "$LOCAL_SVN_ROOT/$zenoss_core" "$ZENSRC"
+                svn --non-interactive -q switch --relocate "$LOCAL_SVN_ROOT" "$ZENOSS_SVN_ROOT" "$ZENSRC"
+                svn --non-interactive update "$ZENSRC"
             else
-                svn --non-interactive checkout "$ZENOSS_SVN_ROOT/$zenoss_core" "$ZENSRC"
+                svn --non-interactive -q checkout "$ZENOSS_SVN_ROOT/$zenoss_core" "$ZENSRC"
             fi
             ;;
     esac
@@ -115,10 +116,11 @@ if [ ! -d "$ZENENTSRC" ]; then
                 fi
             done
             if [ -d "$LOCAL_SVN_PATH" ]; then
-                svn --non-interactive checkout "$LOCAL_SVN_ROOT/$zenoss_enterprise/zenpacks" "$ZENENTSRC"
-                svn --non-interactive switch "$ZENOSS_SVN_ROOT/$zenoss_enterprise/zenpacks" "$ZENENTSRC"
+                svn --non-interactive -q checkout "$LOCAL_SVN_ROOT/$zenoss_enterprise/zenpacks" "$ZENENTSRC"
+                svn --non-interactive -q switch --relocate "$LOCAL_SVN_ROOT" "$ZENOSS_SVN_ROOT" "$ZENENTSRC"
+                svn --non-interactive update "$ZENENTSRC"
             else
-                svn --non-interactive checkout "$ZENOSS_SVN_ROOT/$zenoss_enterprise/zenpacks" "$ZENENTSRC"
+                svn --non-interactive -q checkout "$ZENOSS_SVN_ROOT/$zenoss_enterprise/zenpacks" "$ZENENTSRC"
             fi
             ;;
     esac
