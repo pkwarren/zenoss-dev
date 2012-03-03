@@ -61,7 +61,10 @@ EOF
 fi
 export INSTANCE_HOME=$ZENHOME
 export ZENSRC=$DEV_HOME/core
+export LOCAL_SVN_PATH="$DEV_ROOT/svn/svnint"
+export LOCAL_SVN_ROOT="file://$LOCAL_SVN_PATH"
 export ZENOSS_SVN_ROOT="http://dev.zenoss.com/svnint"
+
 if [ ! -d "$ZENSRC" ]; then
     echo -n "Extract core? [Y/n]: "
     read extract
@@ -82,7 +85,12 @@ if [ ! -d "$ZENSRC" ]; then
                     zenoss_core=""
                 fi
             done
-            svn --non-interactive checkout "$ZENOSS_SVN_ROOT/$zenoss_core" "$ZENSRC"
+            if [ -d "$LOCAL_SVN_PATH" ]; then
+                svn --non-interactive checkout "$LOCAL_SVN_ROOT/$zenoss_core" "$ZENSRC"
+                svn --non-interactive switch "$ZENOSS_SVN_ROOT/$zenoss_core" "$ZENSRC"
+            else
+                svn --non-interactive checkout "$ZENOSS_SVN_ROOT/$zenoss_core" "$ZENSRC"
+            fi
             ;;
     esac
 fi
@@ -106,7 +114,12 @@ if [ ! -d "$ZENENTSRC" ]; then
                     echo "Invalid SVN url: $ZENOSS_SVN_ROOT/$zenoss_enterprise" >&2 zenoss_enterprise=""
                 fi
             done
-            svn --non-interactive checkout "$ZENOSS_SVN_ROOT/$zenoss_enterprise/zenpacks" "$ZENENTSRC"
+            if [ -d "$LOCAL_SVN_PATH" ]; then
+                svn --non-interactive checkout "$LOCAL_SVN_ROOT/$zenoss_enterprise/zenpacks" "$ZENENTSRC"
+                svn --non-interactive switch "$ZENOSS_SVN_ROOT/$zenoss_enterprise/zenpacks" "$ZENENTSRC"
+            else
+                svn --non-interactive checkout "$ZENOSS_SVN_ROOT/$zenoss_enterprise/zenpacks" "$ZENENTSRC"
+            fi
             ;;
     esac
 fi
