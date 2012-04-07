@@ -79,6 +79,13 @@ if [ ! -d "$ZENSRC" ]; then
                 echo -n "Zenoss Core Release [$zenoss_core_default]: "
                 read zenoss_core
                 zenoss_core=${zenoss_core:-"$zenoss_core_default"}
+                svn --non-interactive info "$ZENOSS_SVN_ROOT" > /dev/null
+                if [ $? -ne 0 ]; then
+                    echo "Unable to authenticate to $ZENOSS_SVN_ROOT"
+                    echo "Run this command to authenticate:"
+                    echo "  svn info $ZENOSS_SVN_ROOT --username <your_username>"
+                    exit 1
+                fi
                 svn --non-interactive info "$ZENOSS_SVN_ROOT/$zenoss_core/inst" > /dev/null
                 if [ $? -ne 0 ]; then
                     echo "Invalid SVN url: $ZENOSS_SVN_ROOT/$zenoss_core" >&2
