@@ -40,6 +40,7 @@ start_device, start_ip = find_start_device_and_ip(dmd)
 if start_ip is None:
     start_ip = DEFAULT_START_IP
 ipaddr = increment_ip(start_ip)
+created = False
 for devnum in xrange(start_device, NUM_DEVICES):
     d = dmd.Devices.Discovered.createInstance('dev%05d' % devnum)
     for ifnum in range(NUM_INTERFACES):
@@ -49,7 +50,13 @@ for devnum in xrange(start_device, NUM_DEVICES):
         for ipnum in range(NUM_IP_ADDRS_PER_INTERFACE):
             iface.addIpAddress(ipaddr)
             ipaddr = increment_ip(ipaddr)
-
+    commit()
+    created = True
     if devnum % 5 == 0:
-        commit()
         print "Created %d devices" % devnum
+        created = False
+
+if created:
+    print "Created %d devices" % NUM_DEVICES
+else:
+    print "%d devices already exist" % NUM_DEVICES
