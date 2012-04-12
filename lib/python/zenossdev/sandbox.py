@@ -1,8 +1,10 @@
 import os
 from os.path import isdir, abspath, join, dirname
 import re
-import subprocess
+from subprocess import check_output, CalledProcessError
 import ConfigParser
+from cStringIO import StringIO
+import xml.etree.cElementTree as ET
 
 CONFIG_FILE = os.path.expanduser('~/.zenossdev')
 _CONFIG_SECTION = 'zenossdev'
@@ -16,6 +18,13 @@ class ZenossDevConfig(object):
             return self._config.get(_CONFIG_SECTION, attr)
         except ConfigParser.NoOptionError:
             pass
+
+def _svn_info_xml_parser(basedir):
+    xml_output = check_output(['svn','info','--xml',basedir])
+    sio = StringIO(xml_output)
+    et = ET.parse(sio)
+    sio.close()
+    return et
 
 def load_config(filename=CONFIG_FILE):
     parser = ConfigParser.SafeConfigParser()
@@ -41,6 +50,11 @@ def find_root_checkout(basedir=os.getcwd()):
     directory. Returns the top-level path for the Zenoss Core or Zenoss
     Enterprise checkout, or raises an exception if it isn't found.
     """
+    et = _svn_info_xml_parser(basedir)
+    if et:
+        for element in et.iter('wcroot-abspath'):
+            return abspath(element.text)
+
     if not isdir(join(basedir, '.svn')):
         raise Exception('Not in SVN repository')
     prevdir = None
@@ -52,22 +66,17 @@ def find_root_checkout(basedir=os.getcwd()):
             return curdir
         prevdir = curdir
         curdir = abspath(dirname(curdir))
-
-    raise Exception('Unable to find root directory in: %s', basedir)
+    raise Exception('Unable to find root directory in: %s' % basedir)
 
 def find_base_url(svndir):
     """
     Returns the root of the repository found in the given directory.
     """
-    cmd = ['svn', 'info', svndir]
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = p.communicate()
-    if p.returncode:
-        raise Exception('Failed to run svn info: %s' % stderr)
-    for line in stdout.splitlines():
-        if line.startswith('Repository Root: '):
-            return line.split(': ', 1)[1]
-
+    et = _svn_info_xml_parser(svndir)
+    if et:
+        for element in et.iter('repository'):
+            for root_element in element.iterfind('root'):
+                return root_element.text
     raise Exception('Unable to determine base url')
 
 def is_toplevel(root_dir):
