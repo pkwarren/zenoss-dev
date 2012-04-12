@@ -1,0 +1,55 @@
+#!/usr/bin/env zendmd
+
+DEFAULT_START_IP = "10.1.1.1"
+NUM_DEVICES = 2500
+NUM_INTERFACES = 5
+NUM_IP_ADDRS_PER_INTERFACE = 1
+
+def increment_ip(ipaddr):
+    ipaddr = [int(c) for c in ipaddr.split('.')]
+    for idx in reversed(range(4)):
+        ipaddr[idx] += 1
+        if ipaddr[idx] < 255:
+            return '.'.join(str(c) for c in ipaddr)
+        ipaddr[idx] = 1 if idx == 3 else 0
+    raise Exception('Exhausted ip space')
+
+def find_start_device_and_ip(dmd):
+    from Products.AdvancedQuery import MatchGlob
+    from Products.Zuul.interfaces import ICatalogTool
+    res = ICatalogTool(dmd.Devices).search('Products.ZenModel.Device.Device',
+                                     query=MatchGlob('id', 'dev*'),
+                                     orderby='id',
+                                     reverse=True, limit=1)
+    if res.total:
+        obj = res.results.next().getObject()
+        max_ip = None
+        max_ip_int = None
+        for iface in obj.os.interfaces():
+            for ipaddr in iface.ipaddresses():
+                ip = ipaddr.getIp()
+                ip_int = tuple((int(c) for c in ip.split('.')))
+                if not max_ip or ip_int > max_ip_int:
+                    max_ip = ip
+                    max_ip_int = ip_int
+        return res.total, max_ip
+    return 0, None
+
+
+start_device, start_ip = find_start_device_and_ip(dmd)
+if start_ip is None:
+    start_ip = DEFAULT_START_IP
+ipaddr = increment_ip(start_ip)
+for devnum in xrange(start_device, NUM_DEVICES):
+    d = dmd.Devices.Discovered.createInstance('dev%05d' % devnum)
+    for ifnum in range(NUM_INTERFACES):
+        ifname = 'eth%d' % ifnum
+        d.os.addIpInterface(ifname, True)
+        iface = d.os.interfaces._getOb(ifname)
+        for ipnum in range(NUM_IP_ADDRS_PER_INTERFACE):
+            iface.addIpAddress(ipaddr)
+            ipaddr = increment_ip(ipaddr)
+
+    if devnum % 5 == 0:
+        commit()
+        print "Created %d devices" % devnum

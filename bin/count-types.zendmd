@@ -1,0 +1,33 @@
+#!/usr/bin/env zendmd
+
+from Products.Zuul.interfaces import ICatalogTool
+
+search = ICatalogTool(dmd).search
+
+print "Global Catalog: %d" % len(zport.global_catalog)
+
+types = [
+    ('Devices', 'Products.ZenModel.Device.Device'),
+    ('Components', 'Products.ZenModel.DeviceComponent.DeviceComponent'),
+    ('Organizers', 'Products.ZenModel.DeviceOrganizer.DeviceOrganizer'),
+    ('Device Classes', 'Products.ZenModel.DeviceClass.DeviceClass'),
+    ('Device Groups', 'Products.ZenModel.DeviceGroup.DeviceGroup'),
+    ('Device Locations', 'Products.ZenModel.Location.Location'),
+    ('Device Systems', 'Products.ZenModel.System.System'),
+    ('IP Networks', 'Products.ZenModel.IpNetwork.IpNetwork'),
+    ('IP Addresses', 'Products.ZenModel.IpAddress.IpAddress'),
+    ('Service Organizers', 'Products.ZenModel.ServiceOrganizer.ServiceOrganizer'),
+    ('Service Classes', 'Products.ZenModel.ServiceClass.ServiceClass'),
+    ('Services', 'Products.ZenModel.Service.Service'),
+    ('IP Service Classes', 'Products.ZenModel.IpServiceClass.IpServiceClass'),
+    ('IP Services', 'Products.ZenModel.IpService.IpService'),
+    ('Windows Service Classes', 'Products.ZenModel.WinServiceClass.WinServiceClass'),
+    ('Windows Services', 'Products.ZenModel.WinService.WinService'),
+    ('OS Process Organizers', 'Products.ZenModel.OSProcessOrganizer.OSProcessOrganizer'),
+    ('OS Process Classes', 'Products.ZenModel.OSProcessClass.OSProcessClass'),
+    ('OS Processes', 'Products.ZenModel.OSProcess.OSProcess'),
+    ('ZenPacks', 'Products.ZenModel.ZenPack.ZenPack'),
+]
+
+for label, clsname in types:
+    print "%s: %d" % (label, search(clsname,limit=1).total)
