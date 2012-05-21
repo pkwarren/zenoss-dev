@@ -149,6 +149,10 @@ CCACHE_VERSION=$(ccache -V 2>/dev/null | head -1 | awk '{print $NF}')
 for dir in /usr/lib/ccache /usr/local/Cellar/ccache/$CCACHE_VERSION/libexec; do
     if [ -d "$dir" ]; then
         PATH="$dir:$PATH"
+        # Store Zenoss ccache in a subdirectory
+        if [ `uname -s` = "Darwin" ]; then
+            export CCACHE_DIR=$DEV_ROOT/.ccache
+        fi
         break
     fi
 done
