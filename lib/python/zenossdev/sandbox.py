@@ -110,6 +110,14 @@ def is_official_branch(branch_name):
     """
     return _OFFICIAL_BRANCH_REGEX.match(branch_name)
 
+_OFFICIAL_TAG_REGEX = re.compile(r'^zenoss-(\d+)(?:\.\d+?){1,}$')
+
+def is_official_tag(branch_name):
+    """
+    Return True if the branch name matches an official tag naming scheme.
+    """
+    return _OFFICIAL_TAG_REGEX.match(branch_name)
+
 def find_branch_url(root_dir, branch_name, username=None, guess_branch=True,
                     append_zenpacks=True):
     """
@@ -119,9 +127,12 @@ def find_branch_url(root_dir, branch_name, username=None, guess_branch=True,
     root_dir = find_root_checkout(root_dir)
     base_url = find_base_url(root_dir)
     official = is_official_branch(branch_name) if guess_branch else False
+    tag = is_official_tag(branch_name) if guess_branch else False
     url = None
     if is_core(root_dir):
-        if official:
+        if tag:
+            url = '%s/tags/core/%s' % (base_url, branch_name)
+        elif official:
             url = '%s/branches/core/%s' % (base_url, branch_name)
         elif branch_name == 'trunk':
             url = '%s/%s/core' % (base_url, branch_name)
@@ -129,7 +140,9 @@ def find_branch_url(root_dir, branch_name, username=None, guess_branch=True,
             url = '%s/sandboxen/core/%s/%s' % (base_url, username, branch_name)
     elif is_enterprise(root_dir):
         suffix = '/zenpacks' if append_zenpacks else ''
-        if official:
+        if tag:
+            url = '%s/tags/%s' % (base_url, branch_name)
+        elif official:
             url = '%s/branches/%s%s' % (base_url, branch_name, suffix)
         elif branch_name == 'trunk':
             url = '%s/%s/enterprise%s' % (base_url, branch_name, suffix)
