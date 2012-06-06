@@ -1,13 +1,22 @@
 import os
 from os.path import isdir, abspath, join, dirname
 import re
-from subprocess import check_output, CalledProcessError
+from subprocess import Popen, PIPE
 import ConfigParser
 from cStringIO import StringIO
 import xml.etree.cElementTree as ET
 
 CONFIG_FILE = os.path.expanduser('~/.zenossdev')
 _CONFIG_SECTION = 'zenossdev'
+
+# Only available in Python 2.7+ - write equivalent for backwards compat
+def _check_output(cmd):
+    proc = Popen(cmd, stdout=PIPE)
+    stdout, stderr = proc.communicate()
+    rc = proc.returncode
+    if rc != 0:
+        raise Exception('Command failed: %s, rc=%s' % (' '.join(cmd), rc))
+    return stdout
 
 class ZenossDevConfig(object):
     def __init__(self, config):
@@ -20,7 +29,7 @@ class ZenossDevConfig(object):
             pass
 
 def _svn_info_xml_parser(basedir):
-    xml_output = check_output(['svn','info','--xml',basedir])
+    xml_output = _check_output(['svn','info','--xml',basedir])
     sio = StringIO(xml_output)
     et = ET.parse(sio)
     sio.close()
@@ -29,7 +38,8 @@ def _svn_info_xml_parser(basedir):
 def load_config(filename=CONFIG_FILE):
     parser = ConfigParser.SafeConfigParser()
     if os.path.exists(filename):
-        with open(filename) as f:
+        f = open(filename)
+        try:
             class SectionWrapper(object):
                 def __init__(self):
                     self._wroteHeader = False
@@ -40,6 +50,8 @@ def load_config(filename=CONFIG_FILE):
                         return '[%s]' % _CONFIG_SECTION
                     return f.readline()
             parser.readfp(SectionWrapper())
+        finally:
+            f.close()
     if not parser.has_section(_CONFIG_SECTION):
         parser.add_section(_CONFIG_SECTION)
     return ZenossDevConfig(parser)
@@ -126,8 +138,11 @@ def find_branch_url(root_dir, branch_name, username=None, guess_branch=True,
     """
     root_dir = find_root_checkout(root_dir)
     base_url = find_base_url(root_dir)
-    official = is_official_branch(branch_name) if guess_branch else False
-    tag = is_official_tag(branch_name) if guess_branch else False
+    official = False
+    tag = False
+    if guess_branch:
+        official = is_official_branch(branch_name)
+        tag = is_official_tag(branch_name)
     url = None
     if is_core(root_dir):
         if tag:
@@ -139,7 +154,9 @@ def find_branch_url(root_dir, branch_name, username=None, guess_branch=True,
         elif username:
             url = '%s/sandboxen/core/%s/%s' % (base_url, username, branch_name)
     elif is_enterprise(root_dir):
-        suffix = '/zenpacks' if append_zenpacks else ''
+        suffix = ''
+        if append_zenpacks:
+            suffix = '/zenpacks'
         if tag:
             url = '%s/tags/%s' % (base_url, branch_name)
         elif official:
