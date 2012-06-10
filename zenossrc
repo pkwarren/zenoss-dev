@@ -36,14 +36,14 @@ find_source_enterprise() {
     echo "$location"
 }
 
-DEV_ROOT=$HOME/Projects/zenoss
-DEV_HOME=$DEV_ROOT/$ZENREL
-export ZENHOME=$DEV_HOME/home
-for d in "$ZENHOME" "$DEV_HOME/workspace" "$DEV_HOME/misc"; do
+ZENOSS_DEV_ROOT=${ZENOSS_DEV_ROOT:-"$HOME/Projects/zenoss"}
+ZENOSS_DEV_HOME=$ZENOSS_DEV_ROOT/$ZENREL
+export ZENHOME=$ZENOSS_DEV_HOME/home
+for d in "$ZENHOME" "$ZENOSS_DEV_HOME/workspace" "$ZENOSS_DEV_HOME/misc"; do
     mkdir -p "$d"
 done
-if [ ! -f "$DEV_HOME/misc/settings.xml" ]; then
-    cat > "$DEV_HOME/misc/settings.xml" <<EOF
+if [ ! -f "$ZENOSS_DEV_HOME/misc/settings.xml" ]; then
+    cat > "$ZENOSS_DEV_HOME/misc/settings.xml" <<EOF
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
@@ -60,8 +60,8 @@ if [ ! -f "$DEV_HOME/misc/settings.xml" ]; then
 EOF
 fi
 export INSTANCE_HOME=$ZENHOME
-export ZENSRC=$DEV_HOME/core
-export LOCAL_SVN_PATH="$DEV_ROOT/svn/svnint"
+export ZENSRC=$ZENOSS_DEV_HOME/core
+export LOCAL_SVN_PATH="$ZENOSS_DEV_ROOT/svn/svnint"
 export LOCAL_SVN_ROOT="file://$LOCAL_SVN_PATH"
 export ZENOSS_SVN_ROOT="http://dev.zenoss.com/svnint"
 export DEFAULT_ZEP_JVM_ARGS="-server -Xmx512m"
@@ -103,7 +103,7 @@ if [ ! -d "$ZENSRC" ]; then
             ;;
     esac
 fi
-export ZENENTSRC=$DEV_HOME/enterprise
+export ZENENTSRC=$ZENOSS_DEV_HOME/enterprise
 if [ ! -d "$ZENENTSRC" ]; then
     echo -n "Extract enterprise? [Y/n]: "
     read extract
@@ -151,7 +151,7 @@ for dir in /usr/lib/ccache /usr/local/Cellar/ccache/$CCACHE_VERSION/libexec; do
         PATH="$dir:$PATH"
         # Store Zenoss ccache in a subdirectory
         if [ `uname -s` = "Darwin" ]; then
-            export CCACHE_DIR=$DEV_ROOT/.ccache
+            export CCACHE_DIR=$ZENOSS_DEV_ROOT/.ccache
         fi
         break
     fi
@@ -171,7 +171,7 @@ alias cdcore="cd $ZENSRC && ls"
 alias cdent="cd $ZENENTSRC && ls"
 alias cdinst="cd $ZENSRC/inst && ls"
 
-cd $DEV_HOME
+cd $ZENOSS_DEV_HOME
 #if [ -z "$STY" ]; then
 #    exec screen -x -d -R -S zenoss-$ZENREL -c $ZENOSS_DEV_HOME/screenrc
 #fi
