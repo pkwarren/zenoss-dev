@@ -61,8 +61,10 @@ EOF
 fi
 export INSTANCE_HOME=$ZENHOME
 export ZENSRC=$ZENOSS_DEV_HOME/core
-export LOCAL_SVN_PATH="$ZENOSS_DEV_ROOT/svn/svnint"
-export LOCAL_SVN_ROOT="file://$LOCAL_SVN_PATH"
+if [ -d "$ZENOSS_DEV_ROOT/svn/svnint" ]; then
+    export LOCAL_SVN_PATH="$ZENOSS_DEV_ROOT/svn/svnint"
+    export LOCAL_SVN_ROOT="file://$LOCAL_SVN_PATH"
+fi
 export ZENOSS_SVN_ROOT="http://dev.zenoss.com/svnint"
 export DEFAULT_ZEP_JVM_ARGS="-server -Xmx512m"
 
@@ -93,7 +95,7 @@ if [ ! -d "$ZENSRC" ]; then
                     zenoss_core=""
                 fi
             done
-            if [ -d "$LOCAL_SVN_PATH" ]; then
+            if [ -n "$LOCAL_SVN_PATH" ]; then
                 svn --non-interactive -q checkout "$LOCAL_SVN_ROOT/$zenoss_core" "$ZENSRC"
                 svn --non-interactive -q switch --relocate "$LOCAL_SVN_ROOT" "$ZENOSS_SVN_ROOT" "$ZENSRC"
                 svn --non-interactive update "$ZENSRC"
@@ -123,7 +125,7 @@ if [ ! -d "$ZENENTSRC" ]; then
                     echo "Invalid SVN url: $ZENOSS_SVN_ROOT/$zenoss_enterprise" >&2 zenoss_enterprise=""
                 fi
             done
-            if [ -d "$LOCAL_SVN_PATH" ]; then
+            if [ -n "$LOCAL_SVN_PATH" ]; then
                 svn --non-interactive -q checkout "$LOCAL_SVN_ROOT/$zenoss_enterprise/zenpacks" "$ZENENTSRC"
                 svn --non-interactive -q switch --relocate "$LOCAL_SVN_ROOT" "$ZENOSS_SVN_ROOT" "$ZENENTSRC"
                 svn --non-interactive update "$ZENENTSRC"
