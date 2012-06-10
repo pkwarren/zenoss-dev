@@ -23,8 +23,8 @@
 dirname=`dirname "$0"`
 basedir=`cd "$dirname/.." && pwd`
 
-ZENOSS_DEV_HOME="$basedir"
-export ZENOSS_DEV_HOME
+ZENOSS_DEV="$basedir"
+export ZENOSS_DEV
 
 ZENOSS_DEFAULT_ENV=${ZENOSS_DEFAULT_ENV:-"trunk"}
 ZENREL=${1:-$ZENOSS_DEFAULT_ENV}

@@ -141,9 +141,9 @@ if [ `uname -s` = "Darwin" ]; then
 fi
 
 # Add zenoss-dev/bin to PATH if it isn't already
-echo "$PATH" | grep -q "$ZENOSS_DEV_HOME/bin" 2>/dev/null
+echo "$PATH" | grep -q "$ZENOSS_DEV/bin" 2>/dev/null
 if [ $? -ne 0 ]; then
-    PATH="$ZENOSS_DEV_HOME/bin:$PATH"
+    PATH="$ZENOSS_DEV/bin:$PATH"
 fi
 
 PATH=$ZENHOME/bin:$PATH
