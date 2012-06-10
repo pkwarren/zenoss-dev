@@ -26,7 +26,8 @@ basedir=`cd "$dirname/.." && pwd`
 ZENOSS_DEV_HOME="$basedir"
 export ZENOSS_DEV_HOME
 
-ZENREL=${1:-"trunk"}
+ZENOSS_DEFAULT_ENV=${ZENOSS_DEFAULT_ENV:-"trunk"}
+ZENREL=${1:-$ZENOSS_DEFAULT_ENV}
 export ZENREL
 
 exec bash --rcfile "$basedir/zenossrc"
