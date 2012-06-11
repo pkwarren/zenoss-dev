@@ -66,7 +66,7 @@ if [ -d "$ZENOSS_DEV_ROOT/svn/svnint" ]; then
     export LOCAL_SVN_ROOT="file://$LOCAL_SVN_PATH"
 fi
 export ZENOSS_SVN_ROOT="http://dev.zenoss.com/svnint"
-export DEFAULT_ZEP_JVM_ARGS="-server -Xmx512m"
+export DEFAULT_ZEP_JVM_ARGS=${DEFAULT_ZEP_JVM_ARGS:-"-server -Xmx256m"}
 
 if [ ! -d "$ZENSRC" ]; then
     echo -n "Extract core? [Y/n]: "
