@@ -4,7 +4,7 @@ import re
 from subprocess import Popen, PIPE
 import ConfigParser
 from cStringIO import StringIO
-import xml.etree.cElementTree as ET
+from xml.dom.minidom import parseString
 
 CONFIG_FILE = os.path.expanduser('~/.zenossdev')
 _CONFIG_SECTION = 'zenossdev'
@@ -30,10 +30,14 @@ class ZenossDevConfig(object):
 
 def _svn_info_xml_parser(basedir):
     xml_output = _check_output(['svn','info','--xml',basedir])
-    sio = StringIO(xml_output)
-    et = ET.parse(sio)
-    sio.close()
-    return et
+    return parseString(xml_output)
+
+def _node_get_text(node):
+    text = []
+    for child in node.childNodes:
+        if child.nodeType == node.TEXT_NODE:
+            text.append(child.data)
+    return ''.join(text)
 
 def load_config(filename=CONFIG_FILE):
     parser = ConfigParser.SafeConfigParser()
@@ -62,10 +66,13 @@ def find_root_checkout(basedir=os.getcwd()):
     directory. Returns the top-level path for the Zenoss Core or Zenoss
     Enterprise checkout, or raises an exception if it isn't found.
     """
-    et = _svn_info_xml_parser(basedir)
-    if et:
-        for element in et.iter('wcroot-abspath'):
-            return abspath(element.text)
+    dom = _svn_info_xml_parser(basedir)
+    try:
+        abspath_nodes = dom.getElementsByTagName('wcroot-abspath')
+        if abspath_nodes:
+            return _node_get_text(abspath_nodes[0])
+    finally:
+        dom.unlink()
 
     if not isdir(join(basedir, '.svn')):
         raise Exception('Not in SVN repository')
@@ -84,11 +91,15 @@ def find_base_url(svndir):
     """
     Returns the root of the repository found in the given directory.
     """
-    et = _svn_info_xml_parser(svndir)
-    if et:
-        for element in et.iter('repository'):
-            for root_element in element.iterfind('root'):
-                return root_element.text
+    dom = _svn_info_xml_parser(svndir)
+    try:
+        repository = dom.getElementsByTagName('repository')
+        if repository:
+            root = repository[0].getElementsByTagName('root')
+            if root:
+                return _node_get_text(root[0])
+    finally:
+        dom.unlink()
     raise Exception('Unable to determine base url')
 
 def is_toplevel(root_dir):
