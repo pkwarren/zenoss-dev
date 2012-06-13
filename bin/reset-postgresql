@@ -2,8 +2,11 @@
 
 # Wipes all of the known PostgreSQL databases on the system.
 
-set -e
-psql -q -1 -v ON_ERROR_STOP=1 --pset pager=off -d postgres <<EOF
+PSQL=`which psql 2>/dev/null`
+if [ -z "$PSQL" ]; then
+    exit 0
+fi
+$PSQL -q -1 -v ON_ERROR_STOP=1 --pset pager=off -d postgres <<EOF
 SET client_min_messages to WARNING;
 DROP DATABASE IF EXISTS zenoss_zep;
 DROP DATABASE IF EXISTS zenoss_zep_dev;
