@@ -17,7 +17,18 @@ pushd inst > /dev/null
 
 link-products
 
-time ./install.sh "$@"
+if [ -x ./configure ]; then
+    # Use new build process
+    db='mysql'
+    if [ "$USE_ZENDS" = "1" ]; then
+        db='zends'
+    fi
+    ./configure --with-rrdtool=yes --with-db=$db
+    make -f zenoss.mk
+    ./mkzenossinstance.sh
+else
+    time ./install.sh "$@"
+fi
 
 # Set the uid variable to the current user's username to avoid warnings
 zenglobalconf -u uid=`id -un`
