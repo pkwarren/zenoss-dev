@@ -3,7 +3,11 @@
 # Wipes all of the known MySQL databases on the system.
 
 set -e
-mysql --batch -u root <<EOF
+MYSQL="mysql"
+if [ "$USE_ZENDS" = "1" ]; then
+    MYSQL="/opt/zends/bin/mysql"
+fi
+$MYSQL --batch -u root <<EOF
 drop database if exists events;
 drop database if exists zenoss_zep;
 drop database if exists zenoss_zep_dev;
