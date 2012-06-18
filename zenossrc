@@ -146,6 +146,14 @@ if [ $? -ne 0 ]; then
     PATH="$ZENOSS_DEV/bin:$PATH"
 fi
 
+# Add $ZENDSHOME/bin to PATH if it isn't already
+if [ -n "$ZENDSHOME" ]; then
+    echo "$PATH" | grep -q "$ZENDSHOME/bin" 2>/dev/null
+    if [ $? -ne 0 ]; then
+        PATH="$ZENDSHOME/bin:$PATH"
+    fi
+fi
+
 PATH=$ZENHOME/bin:$PATH
 CCACHE_VERSION=$(ccache -V 2>/dev/null | head -1 | awk '{print $NF}')
 for dir in /usr/lib/ccache /usr/local/Cellar/ccache/$CCACHE_VERSION/libexec; do
