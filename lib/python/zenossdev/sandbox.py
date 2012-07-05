@@ -169,7 +169,7 @@ def find_branch_url(root_dir, branch_name, username=None, guess_branch=True,
         if append_zenpacks:
             suffix = '/zenpacks'
         if tag:
-            url = '%s/tags/%s' % (base_url, branch_name)
+            url = '%s/tags/%s%s' % (base_url, branch_name, suffix)
         elif official:
             url = '%s/branches/%s%s' % (base_url, branch_name, suffix)
         elif branch_name == 'trunk':
