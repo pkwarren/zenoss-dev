@@ -23,7 +23,13 @@ if [ -x ./configure ]; then
     if [ "$USE_ZENDS" = "1" ]; then
         db='zends'
     fi
-    ./configure --with-rrdtool=yes --with-db=$db
+    set +e
+    pkg-config --atleast-version 1.4.7 librrd
+    if [ $? -ne 0 ]; then
+        RRD_ARGS="--with-rrdtool=yes"
+    fi
+    set -e
+    ./configure $RRD_ARGS --with-db=$db
     make -f zenoss.mk
     ./mkzenossinstance.sh
 else
