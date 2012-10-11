@@ -138,6 +138,15 @@ fi
 export RRDDEPS_SKIP=1
 if [ `uname -s` = "Darwin" ]; then
     export BUILD64=1
+    for d in /usr/local /opt/X11 /usr; do
+        if [ -d "$d/lib/pkgconfig" ]; then
+            if [ -z $PKG_CONFIG_PATH ]; then
+                export PKG_CONFIG_PATH="$d/lib/pkgconfig"
+            else
+                export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$d/lib/pkgconfig"
+            fi
+        fi
+    done
 fi
 
 # Add zenoss-dev/bin to PATH if it isn't already
