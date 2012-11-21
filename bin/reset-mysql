@@ -2,6 +2,13 @@
 
 # Wipes all of the known MySQL databases on the system.
 
+set +e
+ZEP_DB=`zenglobalconf -p zep-db 2>/dev/null`
+ZEP_DB=${ZEP_DB:-"zenoss_zep"}
+ZODB_DB=`zenglobalconf -p zodb-db 2>/dev/null`
+ZODB_DB=${ZODB_DB:-"zodb"}
+ZODB_SESSION_DB="${ZODB_DB}_session"
+
 set -e
 MYSQL="mysql"
 if [ "$USE_ZENDS" = "1" ]; then
@@ -9,9 +16,8 @@ if [ "$USE_ZENDS" = "1" ]; then
 fi
 $MYSQL --batch -u root <<EOF
 drop database if exists events;
-drop database if exists zenoss_zep;
-drop database if exists zenoss_zep_dev;
+drop database if exists $ZEP_DB;
 drop database if exists zenoss_zep_test;
-drop database if exists zodb;
-drop database if exists zodb_session;
+drop database if exists $ZODB_DB;
+drop database if exists $ZODB_SESSION_DB;
 EOF

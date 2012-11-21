@@ -3,11 +3,18 @@
 # Removes all Zenoss RabbitMQ information and re-initializes the known vhosts
 # with the appropriate permissions for the Zenoss user.
 
+set +e
+
+ZENOSS_VHOST=`zenglobalconf -p amqpvhost 2>/dev/null`
+ZENOSS_USER=`zenglobalconf -p amqpuser 2>/dev/null`
+ZENOSS_PASS=`zenglobalconf -p amqppass 2>/dev/null`
+
 set -e
 
-VHOSTS="/zenoss /zenoss-test"
-USER="zenoss"
-PASS="zenoss"
+ZENOSS_VHOST=${ZENOSS_VHOST:-"/zenoss"}
+VHOSTS="$ZENOSS_VHOST /zenoss-test"
+USER=${ZENOSS_USER:-"zenoss"}
+PASS=${ZENOSS_USER:-"zenoss"}
 RABBITMQCTL="rabbitmqctl"
 if [ `uname -s` = "Linux" ]; then
     RABBITMQCTL="/usr/sbin/$RABBITMQCTL"

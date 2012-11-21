@@ -2,15 +2,21 @@
 
 # Wipes all of the known PostgreSQL databases on the system.
 
+set +e
+ZEP_DB=`zenglobalconf -p zep-db 2>/dev/null`
+ZEP_DB=${ZEP_DB:-"zenoss_zep"}
+ZODB_DB=`zenglobalconf -p zodb-db 2>/dev/null`
+ZODB_DB=${ZODB_DB:-"zodb"}
+ZODB_SESSION_DB="${ZODB_DB}_session"
+
 PSQL=`which psql 2>/dev/null`
 if [ -z "$PSQL" ]; then
     exit 0
 fi
 $PSQL -q -1 -v ON_ERROR_STOP=1 --pset pager=off -d postgres <<EOF
 SET client_min_messages to WARNING;
-DROP DATABASE IF EXISTS zenoss_zep;
-DROP DATABASE IF EXISTS zenoss_zep_dev;
+DROP DATABASE IF EXISTS $ZEP_DB;
 DROP DATABASE IF EXISTS zenoss_zep_test;
-DROP DATABASE IF EXISTS zodb;
-DROP DATABASE IF EXISTS zodb_session;
+DROP DATABASE IF EXISTS $ZODB_DB;
+DROP DATABASE IF EXISTS $ZODB_SESSION_DB;
 EOF
