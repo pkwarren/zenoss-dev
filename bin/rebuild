@@ -44,7 +44,7 @@ find $ZENSRC -type f -a \( -name .build -o -name .extracted \) -exec rm -f {} \;
 rm -rf $ZENSRC/inst/libzenoss
 
 # Create Zope's __init__.py file for IntelliJ auto-completion to work properly
-for d in Products zope; do
+for d in Products zope Shared Shared/DC; do
     if [ ! -f "$ZENHOME/lib/python/$d/__init__.py" ]; then
         echo "__import__('pkg_resources').declare_namespace(__name__)" > $ZENHOME/lib/python/$d/__init__.py
     fi
