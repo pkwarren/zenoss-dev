@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Sets the appropriate permissions on the zensocket and pyraw (4.x) setuid
+# Sets the appropriate permissions on the zensocket, pyraw, and nmap setuid
 # executables used by Zenoss.
 
 set -e
@@ -8,10 +8,11 @@ set -e
 [ -z "$ZENHOME" ] && echo "ZENHOME not specified" && exit 1
 GROUP=`id -gn`
 
+pushd "$ZENHOME/bin" > /dev/null
 for file in zensocket pyraw nmap; do
-    abspath="$ZENHOME/bin/$file"
-    if [ -f "$abspath" ]; then
-        sudo chown -f root:$GROUP "$abspath"
-        sudo chmod -f 4750 "$abspath"
+    if [ -f "$file" ]; then
+        # Run chown before chmod because chown removes setuid/gid bits
+        sudo chown -f root:$GROUP "$file"
+        sudo chmod -f 4750 "$file"
     fi
 done

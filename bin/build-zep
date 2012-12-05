@@ -31,28 +31,28 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-[ $build_deps -eq 1 ] && build-protocols -deps
+[ $build_deps -eq 1 ] && build-protocols -deps -nopython
 taropts="zxf"
 case `uname -s` in
     Darwin)
         taropts="zxPf"
         ;;
-    Linux)
+    *)
         taropts="zxhf"
         ;;
 esac
 
-[ -x "$ZENHOME/bin/zeneventserver" ] && zeneventserver stop
-rm -rf $ZENHOME/webapps/zenoss-zep $ZENHOME/webapps/zeneventserver
+zeneventserver stop || :
+rm -rf $ZENHOME/webapps/{zenoss-zep,zeneventserver}
 pushd $ZENSRC/zep > /dev/null
 case "$build_type" in
     war)
         echo "Deploying new ZEP war file..."
-        mvn $maven_opts -q clean package install
+        mvn $maven_opts -q clean package install -pl core,webapp
         unzip -q webapp/target/zep-webapp-*.war -d $ZENHOME/webapps/zeneventserver
         ;;
     tar)
-        rm -rf $ZENHOME/bin/zenoss-zep* $ZENHOME/bin/zeneventserver* $ZENHOME/etc/zenoss-zep $ZENHOME/etc/zeneventserver $ZENHOME/share/zenoss-zep $ZENHOME/share/zeneventserver
+        rm -rf $ZENHOME/bin/{zenoss-zep,zeneventserver}* $ZENHOME/etc/{zenoss-zep,zeneventserver} $ZENHOME/share/{zenoss-zep,zeneventserver}
         echo "Deploying new ZEP distribution..."
         mvn $maven_opts -q clean package install
         tar $taropts dist/target/zep-dist-*.tar.gz -C $ZENHOME

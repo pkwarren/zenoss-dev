@@ -12,9 +12,10 @@ ZENOSS_PASS=`zenglobalconf -p amqppass 2>/dev/null`
 set -e
 
 ZENOSS_VHOST=${ZENOSS_VHOST:-"/zenoss"}
+# Add the zenoss-test VHOST (required by ZEP integration tests)
 VHOSTS="$ZENOSS_VHOST /zenoss-test"
 USER=${ZENOSS_USER:-"zenoss"}
-PASS=${ZENOSS_USER:-"zenoss"}
+PASS=${ZENOSS_PASS:-"zenoss"}
 RABBITMQCTL="rabbitmqctl"
 if [ `uname -s` = "Linux" ]; then
     RABBITMQCTL="/usr/sbin/$RABBITMQCTL"

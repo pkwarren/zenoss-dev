@@ -1,9 +1,10 @@
 #!/bin/bash
 
-# Creates a diff of the changes made in a user's sandbox.
+# Shows a diff of the changes made in a user's sandbox.
 # e.g. 'diff-sandbox core/pwarren/foo'
 
+set -e
 SANDBOX="$1"
 [ -z "$SANDBOX" ] && echo "Usage: $0 <sandbox_path>" && exit 1
 START_REV=`svn log -q --stop-on-copy http://dev.zenoss.com/svnint/sandboxen/$SANDBOX | grep '^r' | awk '{print $1}' | tail -1`
-svn diff -$START_REV:HEAD http://dev.zenoss.com/svnint/sandboxen/$SANDBOX
+exec svn diff -$START_REV:HEAD http://dev.zenoss.com/svnint/sandboxen/$SANDBOX

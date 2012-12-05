@@ -11,35 +11,47 @@ set -e
 
 args="$@"
 build_deps=0
+build_java=1
+build_python=1
 while [ $# -gt 0 ]; do
     arg=$1
     shift
     case "$arg" in
+        -nojava)
+            build_java=0
+            ;;
+        -nopython)
+            build_python=0
+            ;;
         -deps)
             build_deps=1
             ;;
         *)
-            echo "Usage: $0 [-deps]"
+            echo "Usage: $0 [-deps] [-nojava] [-nopython]"
             exit 1
             ;;
     esac
 done
 
-[ $build_deps -eq 1 ] && build-java "$args"
+[[ $build_java -eq 1 && $build_deps -eq 1 ]] && build-java "$args"
 
 zenoss stop || :
 
 pushd $ZENSRC/protocols > /dev/null
-POM=pom.xml
-if [ ! -f $POM ]; then
-    POM=java/pom.xml
-fi
-mvn -q -f $POM clean install
 
-# Set up zenoss.protocols in develop mode
-rm -rf $ZENHOME/lib/python/zenoss.protocols*
-rm -rf $ZENHOME/lib/python/zenoss/protocols
-pushd python > /dev/null
-make clean build
-python setup.py develop
-#python setup.py test
+if [ $build_java -eq 1 ]; then
+    POM=pom.xml
+    if [ ! -f $POM ]; then
+        POM=java/pom.xml
+    fi
+    mvn -q -f $POM clean install
+fi
+
+if [ $build_python -eq 1 ]; then
+    # Set up zenoss.protocols in develop mode
+    rm -rf $ZENHOME/lib/python/zenoss.protocols*
+    rm -rf $ZENHOME/lib/python/zenoss/protocols
+    pushd python > /dev/null
+    make clean build
+    python setup.py develop
+fi

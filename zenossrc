@@ -189,6 +189,3 @@ alias cdent="cd $ZENENTSRC && ls"
 alias cdinst="cd $ZENSRC/inst && ls"
 
 cd $ZENOSS_DEV_HOME
-#if [ -z "$STY" ]; then
-#    exec screen -x -d -R -S zenoss-$ZENREL -c $ZENOSS_DEV_HOME/screenrc
-#fi

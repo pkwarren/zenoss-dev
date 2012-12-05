@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Speeds up source builds by creating tar files of symlinks to the already
-# checked out source code in inst/libzenoss (which is used for official builds).
-# This bypasses checking out additional code from SVN when it is already
-# checked out on disk.
+# Speeds up source builds by creating tar files to the already checked out
+# source code in inst/libzenoss (which is used for official builds). This
+# bypasses checking out additional code from SVN when it is already checked
+# out on disk.
 
 set -e
 INST_DIR="$ZENSRC/inst"
@@ -20,8 +20,16 @@ for d in bin Products inst/fs java protocols zep; do
         destdir="extras"
     fi
     if [ -d "$ZENSRC/$d" ]; then
-        ln -s "$ZENSRC/$d" "$destdir"
-        tar zcf $destdir.tar.gz $destdir
-        rm -f $destdir
+        case "$d" in
+            Products)
+                ln -s "$ZENSRC/$d" "$destdir"
+                tar zcf $destdir.tar.gz $destdir
+                rm -f $destdir
+                ;;
+            *)
+                # Don't symlink
+                tar zcf $destdir.tar.gz -C "$ZENSRC" "$d"
+                ;;
+        esac
     fi
 done

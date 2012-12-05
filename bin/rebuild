@@ -1,16 +1,40 @@
 #!/bin/bash
 
+# Performs a full rebuild of Zenoss (cleaning out any artifacts of a
+# previous build).
+
 set -e
 
-# Rebuilds Zenoss (cleaning out any artifacts of previous build).
-
 zenoss-clean
+
+[ -z "$ZENSRC" ] && echo "ZENSRC not specified" >&2 && exit 1
+
 pushd $ZENSRC > /dev/null
 if [ -d .svn ]; then
-    svn-ignored | xargs rm -rf
-    svn up
+    # Previously we used to wipe out all files unknown to SVN. Now we make
+    # an effort to not throw away any files that are newly added.
+    unknown_files="$ZENHOME/.unknown_files"
+    trap "rm -f $unknown_files" EXIT
+    svn st | grep '^?' | awk '{print $NF}' | sort > $unknown_files
+    if [ -s "$unknown_files" ]; then
+        echo "About to remove file(s):"
+        cat $unknown_files | while read f; do
+            echo "  $f"
+        done
+        echo -n "OK to continue [y/N]? "
+        read resp
+        case "$resp" in
+            y|Y)
+                rm -f $unknown_files
+                svn-ignored | xargs rm -rf
+                ;;
+            *)
+                rm -f $unknown_files
+                exit 1
+        esac
+    fi
+    rm -f $unknown_files
 elif [ -d .git ]; then
-    git svn rebase || :
     git clean -f -d -x
 fi
 pushd inst > /dev/null
@@ -24,14 +48,24 @@ if [ -x ./configure ]; then
         db='zends'
     fi
     set +e
+    # Detect if RRD is installed from RPM - if so use it and don't build
+    # our own.
     pkg-config --atleast-version 1.4.7 librrd
     if [ $? -ne 0 ]; then
         RRD_ARGS="--with-rrdtool=yes"
     fi
     set -e
     ./configure $RRD_ARGS --with-db=$db
+    start_build=`date +%s`
     make -f zenoss.mk
+    end_build=`date +%s`
+    elapsed=$((end_build-start_build))
+    echo "Elapsed time in build: $elapsed seconds"
+    start_inst=`date +%s`
     ./mkzenossinstance.sh
+    end_inst=`date +%s`
+    elapsed=$((end_inst-start_inst))
+    echo "Elapsed time in instance creation: $elapsed seconds"
 else
     time ./install.sh "$@"
 fi
@@ -41,19 +75,22 @@ zenglobalconf -u uid=`id -un`
 
 find $ZENSRC -type f -a \( -name .build -o -name .extracted \) -exec rm -f {} \;
 
-rm -rf $ZENSRC/inst/libzenoss
-
-# Create Zope's __init__.py file for IntelliJ auto-completion to work properly
+# Create Zope's __init__.py file for IntelliJ/PyCharm auto-completion to work properly
+pushd "$ZENHOME/lib/python" > /dev/null
 for d in Products zope Shared Shared/DC; do
-    if [ ! -f "$ZENHOME/lib/python/$d/__init__.py" ]; then
-        echo "__import__('pkg_resources').declare_namespace(__name__)" > $ZENHOME/lib/python/$d/__init__.py
+    if [ ! -f "$d/__init__.py" ]; then
+        echo "__import__('pkg_resources').declare_namespace(__name__)" > $d/__init__.py
     fi
 done
+popd > /dev/null
 
-make clean
+# Remove any leftover cruft in inst
+svn-ignored | xargs rm -rf
 
 zenoss stop || :
 
+# Enable Zope debugging
 perl -pi -e 's/#    debug-mode on/debug-mode on/' $ZENHOME/etc/zope.conf
 
-build-protocols
+# Rebuild (only the Python code) to set up in develop mode
+build-protocols -nojava
